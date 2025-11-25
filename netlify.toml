@@ -1,13 +1,13 @@
-functionsDirectory = "/Users/safouman/Downloads/bts-ep-release-official/netlify/functions"
+functionsDirectory = "netlify/functions"
 functionsDirectoryOrigin = "config-v1"
 headersOrigin = "config"
 plugins = []
 redirects = []
 
 [build]
-publish = "/Users/safouman/Downloads/bts-ep-release-official"
+publish = "."
 publishOrigin = "config"
-functions = "/Users/safouman/Downloads/bts-ep-release-official/netlify/functions"
+functions = "netlify/functions"
 
   [build.environment]
 
