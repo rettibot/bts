@@ -500,76 +500,36 @@
   <div class="modal-overlay" id="purchaseModal">
     <div class="modal-content">
       
-      <div class="modal-section active" id="regionStep">
-        <div class="modal-icon" style="background:#000; border-color:var(--gold);">
-            <div id="braille-container"></div>
-        </div>
-        <h2 class="modal-title">Select Region</h2>
-        <p class="modal-subtitle">Location selection affects payment availability</p>
-        
-        <div class="gateway-grid">
-            <button class="gateway-btn click-effect" onclick="selectRegion('tn')">
-                <img src="assets/tunisiaflag.svg" class="gateway-icon" alt="TN">
-                <span class="gateway-label">Tunisia</span>
-            </button>
-            <button class="gateway-btn click-effect" onclick="selectRegion('int')">
-                <img src="assets/international.svg" class="gateway-icon" alt="Globe">
-                <span class="gateway-label">International</span>
-            </button>
-        </div>
-        
-        <button class="button-secondary click-effect" onclick="hidePurchase()">Close</button>
-      </div>
+      <div class="modal-section" id="regionStep" style="display:none;"></div>
 
-      <div class="modal-section" id="purchaseSection">
+      <div class="modal-section active" id="purchaseSection">
         <div class="modal-icon"><img src="https://raw.githubusercontent.com/rettibot/bts-ep-release/main/mask%20gif.gif" alt="Mask" /></div>
         
-        <div id="intHeader">
+        <div id="intHeader" style="display:none;">
             <h2 class="modal-title">Choose Your Price</h2>
             <p class="modal-subtitle">Support the artist • Pay what you want</p>
         </div>
-        <div id="tnHeader" style="display:none">
-            <h2 class="modal-title">Coming Soon</h2>
+        <div id="tnHeader">
+            <h2 class="modal-title">Tunisia Access</h2>
         </div>
 
         <div class="price-section" id="priceSection">
-          <div class="price-value" id="priceDisplay">€5</div>
+          <div class="price-value" id="priceDisplay">15 TND</div>
           <div class="price-label-text">Your Contribution</div>
           <div class="slider-container">
             <div class="slider-track" id="sliderTrack">
               <div class="slider-fill" id="sliderFill"></div>
               <div class="slider-thumb" id="sliderThumb"></div>
             </div>
-            <div class="slider-labels" id="sliderLabels"><span>€5</span><span>€50</span></div>
+            <div class="slider-labels" id="sliderLabels"><span>15 TND</span><span>150 TND</span></div>
           </div>
           <button class="button-random click-effect" onclick="randomPrice(event)"><span class="dice-icon">🎲</span> Choose For Me</button>
         </div>
 
         <div class="view-stage-container">
-            <div id="intView">
-                <div class="payment-methods">
-                    <button class="payment-method-btn selected click-effect" id="stripeBtn" onclick="selectMethod('stripe')">
-                        <img src="assets/creditcard.svg" class="payment-method-icon">
-                        <span class="payment-method-name">Card /<br>E-Wallet</span>
-                    </button>
-                    <button class="payment-method-btn click-effect" id="nowpaymentsBtn" onclick="selectMethod('nowpayments')">
-                        <img src="assets/bitcoin.svg" class="payment-method-icon">
-                        <span class="payment-method-name">Crypto</span>
-                    </button>
-                </div>
-                
-                <div class="expandable-wrapper" id="emailExpandable">
-                    <div class="expandable-content">
-                        <div class="input-field" id="emailFieldContainer">
-                            <label class="input-label">Email Address</label>
-                            <input type="email" id="emailInput" class="input-control" placeholder="you@example.com" required>
-                            <div class="input-error" id="emailError"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div id="intView" style="display:none;"></div>
 
-            <div id="tnView" style="display:none;">
+            <div id="tnView">
                 <p class="tn-info-text" id="tnWaitlistMsg">Tunisian payments are currently opening in waves.<br>
                 <span style="color:rgba(255,255,255,0.6); font-size:12px;">Enter your email to secure your spot in the queue.</span></p>
                 
@@ -584,10 +544,10 @@
             </div>
         </div>
 
-        <button class="button-primary click-effect modal-action-btn" id="purchaseButton" onclick="handleMainAction()">Complete Purchase</button>
+        <button class="button-primary click-effect modal-action-btn" id="purchaseButton" onclick="handleMainAction()">Join Queue</button>
         
-        <p id="codeText" style="text-align:center;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;margin-top:15px;margin-bottom:0; font-family: 'DM Sans', sans-serif;">Have a code? You can enter it at checkout.</p>
-        <button class="button-secondary click-effect modal-footer-link" id="backToRegionBtn" onclick="backToRegion()">← Change Region</button>
+        <p id="codeText" style="display:none;text-align:center;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;margin-top:15px;margin-bottom:0; font-family: 'DM Sans', sans-serif;">Have a code? You can enter it at checkout.</p>
+        <button class="button-secondary click-effect modal-footer-link" id="backToRegionBtn" style="display:none;" onclick="backToRegion()">← Change Region</button>
       </div>
 
       <div class="modal-section" id="alertSection">
@@ -609,7 +569,7 @@
   <script>
     /* --- CONFIGURATION --- */
     // OPTIONS: 'RESERVE_ONLY' | 'EARLY_ACCESS' | 'OPEN'
-    const TUNISIA_STAGE = 'OPEN'; 
+    const TUNISIA_STAGE = 'RESERVE_ONLY'; 
 
     /* BRAILLE GZLOBE SCRIPT */
     (function() {
@@ -663,7 +623,7 @@
     const API_URL = "/.netlify/functions";
     let currentToken = localStorage.getItem("ratchopper_token");
     let accessState = { valid: false, expired: false, downloadTokens: 0, backupAvailable: false };
-    let currentRegion = 'int'; 
+    let currentRegion = 'tn'; 
     let currentMethod = 'stripe';
     let currentPrice = 5;
     let selectedFormat = 'MP3';
@@ -680,7 +640,6 @@
       }
       else if (urlParams.get("activate")) {
         showPurchase();
-        selectRegion('tn');
       }
       else if (currentToken) {
         await verifyToken();
@@ -692,25 +651,22 @@
     function showPurchase() {
         document.getElementById("purchaseModal").classList.add("visible");
         document.body.classList.add("modal-open");
-        document.getElementById("regionStep").classList.add("active");
-        document.getElementById("purchaseSection").classList.remove("active");
+        document.getElementById("purchaseSection").classList.add("active");
         document.getElementById("alertSection").classList.remove("active");
+        selectRegion('tn');
     }
     function hidePurchase() {
         document.getElementById("purchaseModal").classList.remove("visible");
         document.body.classList.remove("modal-open");
     }
     function backToRegion() {
-        document.getElementById("purchaseSection").classList.remove("active");
-        setTimeout(() => document.getElementById("regionStep").classList.add("active"), 200);
+        hidePurchase();
     }
 
     // REGION SELECTION (UPDATED DESIGN & LOGIC)
     function selectRegion(r) {
-        currentRegion = r;
-        const regionStep = document.getElementById("regionStep");
+        currentRegion = 'tn';
         const purchaseSection = document.getElementById("purchaseSection");
-        const intView = document.getElementById("intView");
         const tnView = document.getElementById("tnView");
         const priceSec = document.getElementById("priceSection");
         const btn = document.getElementById("purchaseButton");
@@ -724,98 +680,66 @@
         const tnPaymentNote = document.getElementById("tnPaymentNote");
         const tnResCode = document.getElementById("tnResCode");
 
-        // Check VIP
         const urlParams = new URLSearchParams(window.location.search);
         const isVIP = urlParams.has('activate');
         const resCode = urlParams.get('code'); 
 
-        regionStep.classList.remove("active");
-        setTimeout(() => {
-            purchaseSection.classList.add("active");
-            if (r === 'tn') {
-                // TUNISIA LOGIC
-                intView.style.display = "none";
-                tnView.style.display = "block";
+        purchaseSection.classList.add("active");
+        intHeader.style.display = "none";
+        codeText.style.display = "none";
 
-                // CHECK STAGE
-                if (TUNISIA_STAGE === 'OPEN' || (TUNISIA_STAGE === 'EARLY_ACCESS' && isVIP)) {
-                    // --- OPEN / VIP STATE ---
-                    intHeader.style.display = "none"; // Hide Int Header
-                    tnHeader.style.display = "block"; // Show TN Header
-                    
-                    // HEADER DESIGN: Matches International Style
-                    // Title is White (default class), Subtitle added below
-                    tnHeader.innerHTML = `
-                        <h2 class="modal-title">Early Access</h2>
-                        <p class="modal-subtitle">Support the artist • Pay what you want</p>
-                    `;
+        // TUNISIA-ONLY LOGIC
+        tnView.style.display = "block";
+        tnHeader.style.display = "block";
 
-                    priceSec.style.display = "block";
-                    updatePriceUI(0); 
-                    document.getElementById("sliderLabels").innerHTML = "<span>15 TND</span><span>150 TND</span>";
-                    
-                    btn.textContent = "Complete Purchase";
-                    btn.onclick = handleFlouciPayment;
-                    btn.classList.add("button-pulse"); // Add Pulse Animation
-                    codeText.style.display = "none";
+        if (TUNISIA_STAGE === 'OPEN' || (TUNISIA_STAGE === 'EARLY_ACCESS' && isVIP)) {
+            // --- OPEN / VIP STATE ---
+            tnHeader.innerHTML = `
+                <h2 class="modal-title">Early Access</h2>
+                <p class="modal-subtitle">Support the artist • Pay what you want</p>
+            `;
 
-                    // Hide inputs & notes, Show Code
-                    tnWaitlistMsg.style.display = "none";
-                    tnEmailWrapper.style.display = "none";
-                    tnPaymentNote.style.display = "none"; // Removed Flouci Text
-                    
-                    if(resCode) {
-                        tnResCode.textContent = `RESERVATION CODE: ${resCode}`;
-                        tnResCode.className = "res-code-display"; // Apply Gold/Bold/Margin style
-                        tnResCode.style.display = "block";
-                    } else {
-                        tnResCode.style.display = "none";
-                    }
+            priceSec.style.display = "block";
+            updatePriceUI(0); 
+            document.getElementById("sliderLabels").innerHTML = "<span>15 TND</span><span>150 TND</span>";
+            
+            btn.textContent = "Complete Purchase";
+            btn.onclick = handleFlouciPayment;
+            btn.classList.add("button-pulse"); // Add Pulse Animation
 
-                } else {
-                    // --- LOCKED / WAITLIST STATE ---
-                    intHeader.style.display = "none";
-                    tnHeader.style.display = "block";
-                    tnHeader.innerHTML = `<h2 class="modal-title">Coming Soon</h2>`;
-
-                    priceSec.style.display = "none";
-                    
-                    // CHANGED BUTTON TEXT HERE
-                    btn.textContent = "Join Queue";
-                    btn.onclick = handleMainAction; 
-                    btn.classList.remove("button-pulse"); // No pulse for waitlist
-                    
-                    codeText.style.display = "none";
-                    
-                    tnWaitlistMsg.style.display = "block";
-                    tnEmailWrapper.style.display = "block";
-                    tnPaymentNote.style.display = "none";
-                    tnResCode.style.display = "none";
-
-                    const msg = TUNISIA_STAGE === 'EARLY_ACCESS' 
-                        ? "Tunisian payments are opening in waves.<br>Enter your email to get the next access slot."
-                        : "Tunisian payments coming soon.<br>Reserve your copy.";
-                    
-                    tnWaitlistMsg.innerHTML = msg;
-                }
-
+            tnWaitlistMsg.style.display = "none";
+            tnEmailWrapper.style.display = "none";
+            tnPaymentNote.style.display = "none";
+            
+            if(resCode) {
+                tnResCode.textContent = `RESERVATION CODE: ${resCode}`;
+                tnResCode.className = "res-code-display"; // Apply Gold/Bold/Margin style
+                tnResCode.style.display = "block";
             } else {
-                // --- INT LOGIC ---
-                tnView.style.display = "none";
-                intView.style.display = "block";
-                tnHeader.style.display = "none";
-                intHeader.style.display = "block";
-                
-                priceSec.style.display = "block";
-                document.getElementById("sliderLabels").innerHTML = "<span>€5</span><span>€50</span>";
-                updatePriceUI(0);
-
-                btn.textContent = "Complete Purchase";
-                btn.onclick = handleMainAction;
-                btn.classList.remove("button-pulse");
-                codeText.style.display = "block";
+                tnResCode.style.display = "none";
             }
-        }, 200);
+
+        } else {
+            // --- LOCKED / WAITLIST STATE ---
+            tnHeader.innerHTML = `<h2 class="modal-title">Early Access Queue</h2>`;
+
+            priceSec.style.display = "none";
+            
+            btn.textContent = "Join Queue";
+            btn.onclick = handleMainAction; 
+            btn.classList.remove("button-pulse"); // No pulse for waitlist
+            
+            tnWaitlistMsg.style.display = "block";
+            tnEmailWrapper.style.display = "block";
+            tnPaymentNote.style.display = "none";
+            tnResCode.style.display = "none";
+
+            const msg = TUNISIA_STAGE === 'EARLY_ACCESS' 
+                ? "Tunisian payments are opening in waves.<br>Enter your email to get the next access slot."
+                : "Tunisian payments coming soon.<br>Reserve your copy.";
+            
+            tnWaitlistMsg.innerHTML = msg;
+        }
     }
 
     // PAYMENT METHODS
@@ -835,56 +759,42 @@
     async function handleMainAction() {
       const btn = document.getElementById("purchaseButton");
       
-      if (currentRegion === 'tn') {
-        // RESERVATION LOGIC
-        const email = document.getElementById("tnEmailInput").value.trim();
-        if (!validateEmail(email)) { document.getElementById("tnEmailError").textContent = "Enter a valid email"; return; }
+      // RESERVATION LOGIC (TUNISIA-ONLY)
+      const email = document.getElementById("tnEmailInput").value.trim();
+      if (!validateEmail(email)) { document.getElementById("tnEmailError").textContent = "Enter a valid email"; return; }
+      
+      const isQueue = TUNISIA_STAGE !== 'OPEN';
+      btn.textContent = isQueue ? "Joining Queue..." : "Reserving...";
+      btn.classList.add("btn-processing");
+      
+      try {
+        await fetch(`${API_URL}/handle-reservation`, { method: "POST", body: JSON.stringify({ email, region: 'Tunisia', stage: TUNISIA_STAGE }) });
+        document.getElementById("purchaseSection").classList.remove("active");
         
-        const isQueue = TUNISIA_STAGE === 'EARLY_ACCESS';
-        btn.textContent = isQueue ? "Joining Queue..." : "Reserving...";
-        btn.classList.add("btn-processing");
-        
-        try {
-          await fetch(`${API_URL}/handle-reservation`, { method: "POST", body: JSON.stringify({ email, region: 'Tunisia', stage: TUNISIA_STAGE }) });
-          document.getElementById("purchaseSection").classList.remove("active");
-          
-          // --- MODAL UPDATES FOR PHASE 1 & 2 ---
-          if (isQueue) {
-             // PHASE 2 MODAL
-             showAlert(
-                 "info", 
-                 "Reservation Confirmed", 
-                 "You have been added to the wave list. You will receive your early access link via email soon",
-                 "Close"
-             );
-             // Change Close Button to Secondary (Grey Outline)
-             const alertBtn = document.getElementById("alertBtn");
-             alertBtn.className = "button-secondary click-effect";
-          } else {
-             // PHASE 1 MODAL
-             showAlert(
-                 "info", 
-                 "Reservation Confirmed", 
-                 "You have secured your spot. When the Tunisian payment options open, you will be amongst the first to receive an early access link"
-             );
-             // FIX: ALSO SET PHASE 1 BUTTON TO SECONDARY
-             document.getElementById("alertBtn").className = "button-secondary click-effect";
-          }
-
-        } catch (e) {
-          btn.textContent = "Reserve Your Copy"; btn.classList.remove("btn-processing");
-          alert("Error. Try again.");
-        }
-
-      } else {
-        // INT LOGIC
-        if (currentMethod === 'nowpayments') {
-          const email = document.getElementById("emailInput").value.trim();
-          if (!validateEmail(email)) { document.getElementById("emailError").textContent = "Valid email required"; return; }
-          initiatePayment('nowpayments', email);
+        // --- MODAL UPDATES FOR PHASE 1 & 2 ---
+        if (TUNISIA_STAGE === 'EARLY_ACCESS') {
+           // PHASE 2 MODAL
+           showAlert(
+               "info", 
+               "Reservation Confirmed", 
+               "You have been added to the wave list. You will receive your early access link via email soon",
+               "Close"
+           );
+           const alertBtn = document.getElementById("alertBtn");
+           alertBtn.className = "button-secondary click-effect";
         } else {
-          initiatePayment('stripe', null);
+           // PHASE 1 / RESERVE
+           showAlert(
+               "info", 
+               "Reservation Confirmed", 
+               "You have secured your spot. When the Tunisian payment options open, you will be amongst the first to receive an early access link"
+           );
+           document.getElementById("alertBtn").className = "button-secondary click-effect";
         }
+
+      } catch (e) {
+        btn.textContent = "Join Queue"; btn.classList.remove("btn-processing");
+        alert("Error. Try again.");
       }
     }
 
@@ -995,15 +905,9 @@
     function updatePriceUI(percent) {
       percent = Math.max(0, Math.min(100, percent));
       slider.thumb.style.left = percent + "%"; slider.fill.style.width = percent + "%";
-      
-      if (currentRegion === 'int') {
-        currentPrice = Math.round(5 + (percent/100)*45);
-        document.getElementById("priceDisplay").textContent = "€" + currentPrice;
-      } else {
-        // TND LOGIC: 15 to 150
-        currentPrice = Math.round(15 + (percent/100)*135); 
-        document.getElementById("priceDisplay").textContent = currentPrice + " TND";
-      }
+      // TND LOGIC: 15 to 150
+      currentPrice = Math.round(15 + (percent/100)*135); 
+      document.getElementById("priceDisplay").textContent = currentPrice + " TND";
     }
     
     const handleMove = (cX) => { 
