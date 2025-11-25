@@ -27,6 +27,13 @@ functions = "netlify/functions"
 
   [functions."*"]
 
+[[redirects]]
+from = "https://dev.ratchoppermusic.com/*"
+to = "https://dev--bts-ep.netlify.app/:splat"
+status = 200
+force = true
+conditions = { Host = ["dev.ratchoppermusic.com"] }
+
 [[headers]]
 for = "/*"
 
