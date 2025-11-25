@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTS - RATCHOPPER</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/rettibot/bts-ep-release/main/FAVICON%20OFFICIAL.png" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=League+Gothic&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/gh/be5invis/Iosevka@ff81c66/fonts.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bts.ratchoppermusic.com/">
+  <meta property="og:title" content="RATCHOPPER - Limited Digital Release">
+  <meta property="og:description" content="Get your limited digital copy of RATCHOPPER">
+  <meta property="og:image" content="https://bts.ratchoppermusic.com/assets/artwork-preview.jpg">
+
+  <style>
+    :root { --gold: #d4af37; --bg: #0a0a0a; --spacing-gap: 15px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* FIX: Prevent Text Selection on Slider */
+    .slider-container, .price-section, .card {
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg); min-height: 100vh;
+      color: #fff; position: relative; overflow-x: hidden;
+    }
+    body.grabbing { cursor: grabbing !important; }
+
+    /* Background */
+    body::before {
+      content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(ellipse at center, #3d2416 0%, #1a0f0a 50%, #0000 100%); z-index: -2;
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
+      pointer-events: none; z-index: -1;
+    }
+
+    .container { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 60px 20px 20px 20px; }
+
+    .card {
+      background: rgba(15, 12, 10, 0.95); border: 2px solid rgba(212, 175, 55, 0.4);
+      border-radius: 24px; padding: 40px; width: 100%; max-width: 480px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); backdrop-filter: blur(20px);
+    }
+
+    .header-section { text-align: center; margin-bottom: 30px; position: relative; }
+    .album-art-wrapper { position: relative; margin-bottom: 16px; }
+
+    .album-art {
+      width: 280px; margin: 0 auto; border-radius: 16px; overflow: hidden;
+      position: relative; background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .album-art:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 28px 60px rgba(0,0,0,0.6); }
+    .album-art img { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.6s ease; }
+    .album-art img.loaded { opacity: 1; }
+
+    .limited-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.15));
+      border: 1px solid rgba(212, 175, 55, 0.5); color: var(--gold);
+      padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; margin-bottom: 16px; position: relative; cursor: help;
+    }
+    
+    .limited-tooltip {
+      position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      margin-top: 12px; width: 300px; background: rgba(15, 12, 10, 0.98);
+      border: 2px solid rgba(212, 175, 55, 0.5); border-radius: 16px; padding: 20px;
+      font-size: 12px; line-height: 1.7; color: rgba(255, 255, 255, 0.9);
+      font-weight: 400; font-style: italic; text-align: left;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 100;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+    .limited-badge:hover .limited-tooltip { opacity: 1; visibility: visible; }
+
+    .artist-name {
+      font-family: 'League Gothic', sans-serif !important; 
+      font-size: 78px; 
+      font-weight: 900 !important;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, #d4af37 0%, #f5d76e 100%);
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      line-height: 1;
+    }
+    @media (max-width: 600px) and (orientation: portrait) { .artist-name { font-size: 56px !important; } }
+
+    .subtitle { font-size: 13px; color: rgba(255, 255, 255, 0.6); font-weight: 500; }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.4) 50%, transparent 100%); margin: 30px 0; }
+
+    /* Access Panel */
+    .access-panel {
+        background: rgba(15, 12, 10, 0.95); border: 2px solid rgba(212, 175, 55, 0.5);
+        border-radius: 16px; padding: 20px; margin-bottom: 30px; backdrop-filter: blur(20px);
+    }
+    .panel-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--gold); text-transform: uppercase; }
+    .panel-value { font-size: 11px; color: #fff; font-weight: 600; white-space: nowrap; }
+
+    /* Player */
+    .player-container { position: relative; margin-bottom: 30px; }
+    .player-content { position: relative; border-radius: 16px; overflow: hidden; }
+    .player-content.locked { filter: blur(8px); pointer-events: none; }
+    .embedded-player { border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); position: relative; }
+
+    /* PLAYER SHIELD: Prevents clicking artwork/logo to open new tab */
+    .player-shield {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 70%; /* Covers artwork/title, leaves controls exposed */
+        z-index: 20;
+        cursor: default;
+    }
+
+    .overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+      display: flex; justify-content: center; align-items: center;
+      border-radius: 16px; transition: opacity 0.5s ease, visibility 0.5s ease; z-index: 25;
+    }
+    .overlay::before {
+      content: ''; position: absolute; inset: 0; opacity: 0.3; z-index: -1;
+      background-image: url('https://raw.githubusercontent.com/rettibot/bts-ep-release/main/BLURRED%20PLAYER.png');
+      background-size: cover; background-position: center; border-radius: 16px;
+    }
+    .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .overlay-content { 
+        padding: 30px; max-width: 360px; width: 100%; animation: fadeInUp 0.6s ease; text-align: center; 
+        font-family: 'DM Sans', sans-serif;
+    }
+    .icon-wrapper {
+      width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.15) 100%);
+      border: 2px solid rgba(212, 175, 55, 0.5); display: flex; align-items: center; justify-content: center;
+      font-size: 28px; animation: breatheGlow 2.5s ease-in-out infinite;
+    }
+    .overlay-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #fff; letter-spacing: -0.5px; }
+    .overlay-description { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.6); margin-bottom: 22px; }
+
+    /* Effects */
+    .click-effect:active { transform: scale(0.96) !important; filter: brightness(1.2); }
+    .btn-processing { animation: pulseGold 1.5s infinite; cursor: wait; }
+    @keyframes breatheGlow { 0%,100%{ box-shadow: 0 0 20px rgba(212,175,55,0.4);} 50%{ box-shadow: 0 0 40px rgba(212,175,55,0.8);} }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: translateY(0);} }
+    @keyframes pulseGold { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); } 100% { box-shadow: 0 0 0 12px rgba(212, 175, 55, 0); } }
+
+    /* Buttons */
+    .button-primary {
+      width: 100%; padding: 16px 32px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #d4af37 0%, #c9a347 100%);
+      color: #0a0806; font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4); letter-spacing: 0.5px; position: relative; overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .button-primary:hover { background: linear-gradient(135deg, #f5d76e 0%, #d4af37 100%); transform: translateY(-2px); }
+    .button-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .button-secondary {
+      width: 100%; padding: 12px 32px; border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px; background: transparent; color: rgba(255,255,255,0.8);
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 8px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .button-secondary:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.3); }
+
+    .button-random {
+      width: 100%; padding: 11px 24px; border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 10px; background: rgba(212, 175, 55, 0.1); color: var(--gold);
+      font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+      margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .button-random:hover { background: rgba(212,175,55,0.2); border-color: rgba(212,175,55,0.6); transform: translateY(-1px); }
+    .dice-icon { font-size: 18px; }
+
+    /* Pulse Animation for Special Buttons */
+    .button-pulse { animation: btnPulse 2s infinite; }
+    @keyframes btnPulse {
+        0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
+
+    /* Download Area */
+    .download-area { opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0.5s ease; margin-bottom: 30px; }
+    .download-area.visible { opacity: 1; visibility: visible; }
+    .download-btn-simple {
+      width: 100%; padding: 14px 24px; border: 2px solid rgba(212,175,55,0.5);
+      border-radius: 12px; background: rgba(212,175,55,0.1); color: var(--gold);
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .download-btn-simple:hover { background: rgba(212,175,55,0.2); transform: translateY(-2px); }
+    .download-btn-icon { fill: var(--gold); }
+
+    /* MODAL SYSTEM */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px);
+      display: flex; justify-content: center; align-items: center; z-index: 1000;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease; padding: 16px;
+    }
+    .modal-overlay.visible { opacity: 1; visibility: visible; }
+
+    .modal-content {
+      background: rgba(15, 12, 10, 0.98);
+      border: 2px solid rgba(212, 175, 55, 0.4);
+      border-radius: 24px; padding: 32px; max-width: 420px; width: 90%; text-align: center;
+      transform: scale(0.9); transition: transform 0.3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+      display: flex; flex-direction: column; justify-content: flex-start;
+      min-height: 560px;
+      font-family: 'DM Sans', sans-serif;
+      color: #fff;
+    }
+    .modal-overlay.visible .modal-content { transform: scale(1); animation: modalPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes modalPop { 0% { transform: scale(0.8); opacity: 0;} 100% { transform: scale(1); opacity: 1;} }
+
+    .modal-section { display: none; width: 100%; animation: fadeIn 0.3s ease; }
+    .modal-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* MODAL ELEMENTS & ICON FIXES */
+    .modal-icon {
+      width: 100px; height: 100px; 
+      margin: 0 auto 28px; 
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+      border: 2px solid rgba(212, 175, 55, 0.5); overflow: hidden;
+      /* FIX: Center Icons Perfectly */
+      display: flex; align-items: center; justify-content: center;
+    }
+    
+    /* Fix for crooked text icons (like ⚠️) */
+    .modal-icon div, .modal-icon span { line-height: 1; display: block; }
+    
+    .modal-icon img { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* Gold Filter for Info Icon */
+    .gold-filter { 
+        filter: sepia(100%) saturate(500%) hue-rotate(0deg) brightness(90%) contrast(100%);
+        width: 40px !important; 
+        height: 40px !important; 
+        object-fit: contain; 
+    }
+    
+    .modal-title { 
+        font-family: 'DM Sans', sans-serif; 
+        font-size: 29px; 
+        font-weight: 700; 
+        margin-bottom: 4px; 
+        color: #fff; 
+        letter-spacing: -0.5px; 
+        line-height: 1.2;
+    }
+    .modal-subtitle { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 20px; line-height: 1.4; }
+
+    /* GATEWAY GRID */
+    .gateway-grid { 
+        display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+        margin-bottom: 15px; margin-top: 10px; 
+    }
+    .gateway-btn {
+        padding: 24px 10px; border: 2px solid rgba(212, 175, 55, 0.3); border-radius: 16px;
+        background: rgba(255,255,255,0.03); color: #fff; cursor: pointer;
+        transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; gap: 14px;
+        font-family: 'DM Sans', sans-serif;
+    }
+    .gateway-btn:hover { background: rgba(212, 175, 55, 0.15); border-color: var(--gold); transform: translateY(-3px); }
+    
+    .gateway-icon { width: 40px; height: 40px; display: block; object-fit: contain; }
+    .gateway-label { font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
+
+    /* PRICE SLIDER */
+    .price-section { margin-bottom: 15px; }
+    
+    .price-value {
+      font-family: 'Oswald', sans-serif !important;
+      font-size: 48px; font-weight: 700;
+      background: linear-gradient(135deg, #d4af37 0%, #f5d76e 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 0px; letter-spacing: 0px; line-height: 1;
+    }
+    .price-label-text { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 12px; font-weight: 500; }
+
+    .slider-container { position: relative; margin-bottom: 8px; padding: 10px 0; }
+    .slider-track { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; position: relative; overflow: visible; cursor: pointer; }
+    .slider-fill { 
+        position: absolute; left: 0; top: 0; height: 100%; 
+        background: linear-gradient(90deg, #d4af37 0%, #f5d76e 100%); 
+        border-radius: 4px; width: 0%; pointer-events: none;
+        transition: width 0.2s ease;
+    }
+    .slider-thumb {
+      position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: 28px; height: 28px; background: linear-gradient(135deg, #f5d76e 0%, #d4af37 100%);
+      border-radius: 50%; cursor: grab; animation: breatheGlow 3s ease-in-out infinite;
+      left: 0%; z-index: 10; border: 3px solid rgba(10, 8, 6, 0.8);
+      transition: left 0.2s ease;
+    }
+    
+    /* FIX: NO LAG WHEN DRAGGING (Override Transition) */
+    .slider-container.dragging .slider-thumb, 
+    .slider-container.dragging .slider-fill { 
+        transition: none !important; 
+    }
+
+    .slider-thumb:active { cursor: grabbing; }
+    
+    .slider-labels { 
+        font-family: 'Oswald', sans-serif !important;
+        display: flex; justify-content: space-between; font-size: 25px; 
+        color: rgba(255,255,255,0.5); font-weight: 700; margin-top: 13px; 
+    }
+
+    /* STAGE CONTAINER */
+    .view-stage-container { min-height: 110px; display: flex; flex-direction: column; justify-content: center; width: 100%; margin-bottom: 0; }
+    #intView, #tnView { width: 100%; animation: fadeIn 0.4s ease; }
+
+    /* Payment Methods */
+    .payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0; }
+    .payment-method-btn {
+      padding: 16px; border: 2px solid rgba(139,115,85,0.3); border-radius: 12px;
+      background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.7);
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      display: flex; flex-direction: column; align-items: center; gap: 8px; justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .payment-method-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(212,175,55,0.4); }
+    .payment-method-btn.selected { background: rgba(212,175,55,0.15); border-color: var(--gold); color: var(--gold); }
+    .payment-method-icon { width: 32px; height: 32px; object-fit: contain; margin-bottom: 4px; display: block; }
+    #stripeBtn .payment-method-icon { transform: translateY(4px) scale(1.1); }
+
+    /* Inputs */
+    .expandable-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s ease, margin-top 0.4s ease; margin-top: 0; }
+    .expandable-wrapper.expanded { grid-template-rows: 1fr; margin-top: 15px; }
+    .expandable-content { overflow: hidden; }
+
+    .input-field { text-align: left; width: 100%; }
+    .input-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.6); text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .input-control {
+      width: 100%; padding: 14px 16px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.04);
+      color: #fff; font-size: 15px; transition: 0.2s ease;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .input-control:focus { border-color: var(--gold); outline: none; }
+    .input-error { font-size: 11px; color: #ff6b6b; margin-top: 4px; min-height: 14px; }
+    
+    /* Tunisia Text Logic */
+    .tn-info-text { font-size:13px; color:rgba(255,255,255,0.8); margin-bottom:12px; line-height:1.5; }
+    
+    /* Payment Note */
+    .tn-payment-note {
+        margin: 15px 0;
+        color: rgba(255,255,255,0.6);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    /* GOLD RESERVATION CODE STYLE */
+    .res-code-display {
+        color: #d4af37;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-align: center;
+        margin: 20px 0; /* 20px top/bottom spacing */
+        display: block;
+        font-size: 14px;
+    }
+
+    /* ARTWORK MODAL STYLES */
+    #artworkModal .modal-content {
+        max-width: 560px;
+        min-height: unset;
+        padding: 16px;
+        background: rgba(15, 12, 10, 0.98);
+        border: none;
+    }
+    #artworkModal img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        display: block;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    /* BRAILLE GLOBE */
+    #braille-container { width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font: 10px/10px 'Iosevka Web', monospace; color: var(--gold); overflow: hidden; }
+    .braille { white-space: pre; transform: scale(0.9); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 20px; font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
+    .footer-links { display: flex; justify-content: center; gap: 20px; margin-top: 8px; }
+    .footer-link { color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.3s ease; }
+    .footer-link:hover { color: var(--gold); }
+
+    /* Loaders */
+    .system-loader { width: 16px; height: 16px; border-radius: 50%; background: #FF3D00; position: relative; margin: 40px auto; transform: scale(1.5); }
+    .system-loader:before, .system-loader:after { content: ""; position: absolute; border-radius: 50%; inset: 0; background: #d4af37; transform: rotate(0deg) translate(24px); animation: rotateOrbit 1s ease infinite; }
+    .system-loader:after { animation-delay: 0.5s; }
+    @keyframes rotateOrbit { 100% { transform: rotate(360deg) translate(24px); } }
+
+    .modal-action-btn { margin-top: 15px; }
+    .modal-footer-link { margin-top: 15px; }
+    #tnView .input-field { margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header-section">
+        <div class="album-art-wrapper">
+          <div class="album-art click-effect" id="albumArt">
+            <img src="https://bts.ratchoppermusic.com/assets/artwork.png" alt="BTS Album Art" onload="this.classList.add('loaded')" />
+          </div>
+        </div>
+        <span class="limited-badge" id="limitedBadge">
+          Limited Digital Copies
+          <div class="limited-tooltip">In a world where music is reduced to fractions of cents... You own your copy.</div>
+        </span>
+        <h1 class="artist-name">RATCHOPPER</h1>
+        <p class="subtitle">5 Tracks • 5m 42s</p>
+      </div>
+
+      <div class="access-panel" id="accessPanel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div><div class="panel-label">ACCESS WINDOW</div><div class="panel-value" id="timeRemaining">Calculating...</div></div>
+          <div style="text-align:right;"><div class="panel-label">DOWNLOADS</div><div class="panel-value" id="tokenCount" style="font-size:20px;">2/2</div></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+          <div class="panel-label">BACKUP LINK</div><div class="panel-value" id="backupStatus">Available</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="player-container">
+        <div class="player-content locked" id="playerContent">
+          <div class="embedded-player" id="embeddedPlayer">
+            <div class="player-shield"></div>
+            <iframe id="musicPlayer" style="border-radius:16px" width="100%" height="344" frameborder="0" allow="autoplay"></iframe>
+          </div>
+        </div>
+        <div class="overlay" id="unlockOverlay">
+          <div class="overlay-content">
+            <div class="icon-wrapper">🔒</div>
+            <h2 class="overlay-title">Purchase to Unlock</h2>
+            <p class="overlay-description">Get access to the full EP plus High-Quality downloads</p>
+            <button class="button-primary click-effect" onclick="showPurchase()">Unlock Full EP</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="download-area" id="downloadArea">
+        <button id="downloadFullButton" class="download-btn-simple click-effect" onclick="showFormats()">
+          <svg class="download-btn-icon" width="24" height="24" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          <span class="download-btn-text">Download Full EP</span>
+        </button>
+      </div>
+
+      <div class="footer">
+        © 2025 RATCHOPPER • ALL RIGHTS RESERVED
+        <div class="footer-links">
+          <a href="privacy-policy/" class="footer-link">Privacy Policy</a>
+          <a href="terms-of-service/" class="footer-link">Terms of Service</a>
+          <a href="faq/" class="footer-link">FAQ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="purchaseModal">
+    <div class="modal-content">
+      
+      <div class="modal-section active" id="regionStep">
+        <div class="modal-icon" style="background:#000; border-color:var(--gold);">
+            <div id="braille-container"></div>
+        </div>
+        <h2 class="modal-title">Select Region</h2>
+        <p class="modal-subtitle">Location selection affects payment availability</p>
+        
+        <div class="gateway-grid">
+            <button class="gateway-btn click-effect" onclick="selectRegion('tn')">
+                <img src="assets/tunisiaflag.svg" class="gateway-icon" alt="TN">
+                <span class="gateway-label">Tunisia</span>
+            </button>
+            <button class="gateway-btn click-effect" onclick="selectRegion('int')">
+                <img src="assets/international.svg" class="gateway-icon" alt="Globe">
+                <span class="gateway-label">International</span>
+            </button>
+        </div>
+        
+        <button class="button-secondary click-effect" onclick="hidePurchase()">Close</button>
+      </div>
+
+      <div class="modal-section" id="purchaseSection">
+        <div class="modal-icon"><img src="https://raw.githubusercontent.com/rettibot/bts-ep-release/main/mask%20gif.gif" alt="Mask" /></div>
+        
+        <div id="intHeader">
+            <h2 class="modal-title">Choose Your Price</h2>
+            <p class="modal-subtitle">Support the artist • Pay what you want</p>
+        </div>
+        <div id="tnHeader" style="display:none">
+            <h2 class="modal-title">Coming Soon</h2>
+        </div>
+
+        <div class="price-section" id="priceSection">
+          <div class="price-value" id="priceDisplay">€5</div>
+          <div class="price-label-text">Your Contribution</div>
+          <div class="slider-container">
+            <div class="slider-track" id="sliderTrack">
+              <div class="slider-fill" id="sliderFill"></div>
+              <div class="slider-thumb" id="sliderThumb"></div>
+            </div>
+            <div class="slider-labels" id="sliderLabels"><span>€5</span><span>€50</span></div>
+          </div>
+          <button class="button-random click-effect" onclick="randomPrice(event)"><span class="dice-icon">🎲</span> Choose For Me</button>
+        </div>
+
+        <div class="view-stage-container">
+            <div id="intView">
+                <div class="payment-methods">
+                    <button class="payment-method-btn selected click-effect" id="stripeBtn" onclick="selectMethod('stripe')">
+                        <img src="assets/creditcard.svg" class="payment-method-icon">
+                        <span class="payment-method-name">Card /<br>E-Wallet</span>
+                    </button>
+                    <button class="payment-method-btn click-effect" id="nowpaymentsBtn" onclick="selectMethod('nowpayments')">
+                        <img src="assets/bitcoin.svg" class="payment-method-icon">
+                        <span class="payment-method-name">Crypto</span>
+                    </button>
+                </div>
+                
+                <div class="expandable-wrapper" id="emailExpandable">
+                    <div class="expandable-content">
+                        <div class="input-field" id="emailFieldContainer">
+                            <label class="input-label">Email Address</label>
+                            <input type="email" id="emailInput" class="input-control" placeholder="you@example.com" required>
+                            <div class="input-error" id="emailError"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tnView" style="display:none;">
+                <p class="tn-info-text" id="tnWaitlistMsg">Tunisian payments are currently opening in waves.<br>
+                <span style="color:rgba(255,255,255,0.6); font-size:12px;">Enter your email to secure your spot in the queue.</span></p>
+                
+                <p class="tn-payment-note" id="tnPaymentNote" style="display:none;">Secure payment via Flouci (Card / Wallet)</p>
+                
+                <p id="tnResCode" style="display:none;"></p>
+
+                <div class="input-field" id="tnEmailWrapper" style="margin-top:0;">
+                    <input type="email" id="tnEmailInput" class="input-control" placeholder="Enter email to reserve..." style="text-align:center;">
+                    <div class="input-error" id="tnEmailError"></div>
+                </div>
+            </div>
+        </div>
+
+        <button class="button-primary click-effect modal-action-btn" id="purchaseButton" onclick="handleMainAction()">Complete Purchase</button>
+        
+        <p id="codeText" style="text-align:center;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;margin-top:15px;margin-bottom:0; font-family: 'DM Sans', sans-serif;">Have a code? You can enter it at checkout.</p>
+        <button class="button-secondary click-effect modal-footer-link" id="backToRegionBtn" onclick="backToRegion()">← Change Region</button>
+      </div>
+
+      <div class="modal-section" id="alertSection">
+        <div class="modal-icon" id="alertIconWrapper"></div>
+        <h2 class="modal-title" id="alertTitle">Title</h2>
+        <p class="modal-subtitle" id="alertMessage" style="margin-bottom:20px;">Message</p>
+        <button class="button-secondary click-effect" id="alertBtn" onclick="closeAlert()">Close</button>
+      </div>
+
+    </div>
+  </div>
+  <div class="modal-overlay" id="artworkModal">
+    <div class="modal-content">
+        <img src="https://bts.ratchoppermusic.com/assets/artwork.png" alt="BTS Album Art" />
+        <button class="button-secondary click-effect" style="margin-top: 12px" onclick="hideArtwork()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    /* --- CONFIGURATION --- */
+    // OPTIONS: 'RESERVE_ONLY' | 'EARLY_ACCESS' | 'OPEN'
+    const TUNISIA_STAGE = 'OPEN'; 
+
+    /* BRAILLE GZLOBE SCRIPT */
+    (function() {
+        const enc = x => (x&0x08)<<3 | (x&0x70)>>1 | (x&0x87) | 0x2800;
+        const row = x => String.fromCharCode(...Array.from(x, enc));
+        const create = (width, height) => Array.from(Array(height>>2), () => new Uint8Array(width>>1));
+        const set = (table, x, y) => table[y>>2][x>>1] |= 1<<((y&3)|(x&1)<<2);
+        const render = table => table.map(row).join('\n');
+        const bayer = (order, x, y) => { let z=0; for(let i=order; i--; x>>=1, y>>=1) z=(x&1^y&1|z<<1)<<1|y&1; return z; };
+        const lut = order => { const size=1<<order, area=size*size, l=new Float32Array(area); for(let y=0;y<size;y++) for(let x=0;x<size;x++) l[x+y*size]=(bayer(order,x,y)+.5)/area; return (x,y)=>l[x%size+y%size*size]; };
+        try {
+            const simplex = new SimplexNoise();
+            const bayer4 = lut(4);
+            const fbm = (freq, amp, x, y, z) => {
+                let v = 0;
+                for(let i=0; i<8; i++) { v += simplex.noise3D(x*freq, y*freq, z*freq) * amp; freq*=2; amp/=2; }
+                return v;
+            };
+            const globe = (x, y, u, v, w) => {
+                const d = u*u + v*v;
+                if (d > 1) return false;
+                const f = 1 / ((1 - d**.5)**.5 + 1);
+                const t = 2*(.5 + .5*fbm(.5, 1, 1e-1*w + f*u, f*v, 1e-2*w)) % 1;
+                return t > bayer4(x, y);
+            };
+            const root = document.createElement('div');
+            root.className = 'braille';
+            document.addEventListener("DOMContentLoaded", () => {
+                const container = document.getElementById('braille-container');
+                if(container) container.appendChild(root);
+            });
+            const loop = () => {
+                const width = 40, height = 40; 
+                const pixels = create(width, height);
+                const time = 1e-3*Date.now();
+                for (let y = 0; y < height; y++) {
+                    const v = 2*y/height - 1;
+                    for (let x = 0; x < width; x++) {
+                        const u = 2*x/width - 1; 
+                        if (globe(x, y, u, v, time)) set(pixels, x, y);
+                    }
+                }
+                root.textContent = render(pixels);
+                requestAnimationFrame(loop);
+            };
+            loop();
+        } catch(e) { console.log("SimplexNoise not loaded"); }
+    })();
+
+    // --- MAIN LOGIC ---
+    const API_URL = "/.netlify/functions";
+    let currentToken = localStorage.getItem("ratchopper_token");
+    let accessState = { valid: false, expired: false, downloadTokens: 0, backupAvailable: false };
+    let currentRegion = 'int'; 
+    let currentMethod = 'stripe';
+    let currentPrice = 5;
+    let selectedFormat = 'MP3';
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      if (urlParams.get("success") === "true" && urlParams.get("payment_id")) {
+        showAlert("loader", "Processing Payment...", "Please wait...");
+        await handlePaymentSuccess(urlParams.get("payment_id"));
+      } 
+      else if (urlParams.get("backup")) {
+        await handleSmartBackup(urlParams.get("backup"));
+      }
+      else if (urlParams.get("activate")) {
+        showPurchase();
+        selectRegion('tn');
+      }
+      else if (currentToken) {
+        await verifyToken();
+      }
+      window.history.replaceState({}, document.title, window.location.pathname);
+    });
+
+    // UI NAVIGATION
+    function showPurchase() {
+        document.getElementById("purchaseModal").classList.add("visible");
+        document.body.classList.add("modal-open");
+        document.getElementById("regionStep").classList.add("active");
+        document.getElementById("purchaseSection").classList.remove("active");
+        document.getElementById("alertSection").classList.remove("active");
+    }
+    function hidePurchase() {
+        document.getElementById("purchaseModal").classList.remove("visible");
+        document.body.classList.remove("modal-open");
+    }
+    function backToRegion() {
+        document.getElementById("purchaseSection").classList.remove("active");
+        setTimeout(() => document.getElementById("regionStep").classList.add("active"), 200);
+    }
+
+    // REGION SELECTION (UPDATED DESIGN & LOGIC)
+    function selectRegion(r) {
+        currentRegion = r;
+        const regionStep = document.getElementById("regionStep");
+        const purchaseSection = document.getElementById("purchaseSection");
+        const intView = document.getElementById("intView");
+        const tnView = document.getElementById("tnView");
+        const priceSec = document.getElementById("priceSection");
+        const btn = document.getElementById("purchaseButton");
+        const codeText = document.getElementById("codeText");
+        
+        const intHeader = document.getElementById("intHeader");
+        const tnHeader = document.getElementById("tnHeader");
+        
+        const tnWaitlistMsg = document.getElementById("tnWaitlistMsg");
+        const tnEmailWrapper = document.getElementById("tnEmailWrapper");
+        const tnPaymentNote = document.getElementById("tnPaymentNote");
+        const tnResCode = document.getElementById("tnResCode");
+
+        // Check VIP
+        const urlParams = new URLSearchParams(window.location.search);
+        const isVIP = urlParams.has('activate');
+        const resCode = urlParams.get('code'); 
+
+        regionStep.classList.remove("active");
+        setTimeout(() => {
+            purchaseSection.classList.add("active");
+            if (r === 'tn') {
+                // TUNISIA LOGIC
+                intView.style.display = "none";
+                tnView.style.display = "block";
+
+                // CHECK STAGE
+                if (TUNISIA_STAGE === 'OPEN' || (TUNISIA_STAGE === 'EARLY_ACCESS' && isVIP)) {
+                    // --- OPEN / VIP STATE ---
+                    intHeader.style.display = "none"; // Hide Int Header
+                    tnHeader.style.display = "block"; // Show TN Header
+                    
+                    // HEADER DESIGN: Matches International Style
+                    // Title is White (default class), Subtitle added below
+                    tnHeader.innerHTML = `
+                        <h2 class="modal-title">Early Access</h2>
+                        <p class="modal-subtitle">Support the artist • Pay what you want</p>
+                    `;
+
+                    priceSec.style.display = "block";
+                    updatePriceUI(0); 
+                    document.getElementById("sliderLabels").innerHTML = "<span>15 TND</span><span>150 TND</span>";
+                    
+                    btn.textContent = "Complete Purchase";
+                    btn.onclick = handleFlouciPayment;
+                    btn.classList.add("button-pulse"); // Add Pulse Animation
+                    codeText.style.display = "none";
+
+                    // Hide inputs & notes, Show Code
+                    tnWaitlistMsg.style.display = "none";
+                    tnEmailWrapper.style.display = "none";
+                    tnPaymentNote.style.display = "none"; // Removed Flouci Text
+                    
+                    if(resCode) {
+                        tnResCode.textContent = `RESERVATION CODE: ${resCode}`;
+                        tnResCode.className = "res-code-display"; // Apply Gold/Bold/Margin style
+                        tnResCode.style.display = "block";
+                    } else {
+                        tnResCode.style.display = "none";
+                    }
+
+                } else {
+                    // --- LOCKED / WAITLIST STATE ---
+                    intHeader.style.display = "none";
+                    tnHeader.style.display = "block";
+                    tnHeader.innerHTML = `<h2 class="modal-title">Coming Soon</h2>`;
+
+                    priceSec.style.display = "none";
+                    
+                    // CHANGED BUTTON TEXT HERE
+                    btn.textContent = "Join Queue";
+                    btn.onclick = handleMainAction; 
+                    btn.classList.remove("button-pulse"); // No pulse for waitlist
+                    
+                    codeText.style.display = "none";
+                    
+                    tnWaitlistMsg.style.display = "block";
+                    tnEmailWrapper.style.display = "block";
+                    tnPaymentNote.style.display = "none";
+                    tnResCode.style.display = "none";
+
+                    const msg = TUNISIA_STAGE === 'EARLY_ACCESS' 
+                        ? "Tunisian payments are opening in waves.<br>Enter your email to get the next access slot."
+                        : "Tunisian payments coming soon.<br>Reserve your copy.";
+                    
+                    tnWaitlistMsg.innerHTML = msg;
+                }
+
+            } else {
+                // --- INT LOGIC ---
+                tnView.style.display = "none";
+                intView.style.display = "block";
+                tnHeader.style.display = "none";
+                intHeader.style.display = "block";
+                
+                priceSec.style.display = "block";
+                document.getElementById("sliderLabels").innerHTML = "<span>€5</span><span>€50</span>";
+                updatePriceUI(0);
+
+                btn.textContent = "Complete Purchase";
+                btn.onclick = handleMainAction;
+                btn.classList.remove("button-pulse");
+                codeText.style.display = "block";
+            }
+        }, 200);
+    }
+
+    // PAYMENT METHODS
+    function selectMethod(m) {
+      currentMethod = m;
+      document.getElementById("stripeBtn").classList.toggle("selected", m === 'stripe');
+      document.getElementById("nowpaymentsBtn").classList.toggle("selected", m === 'nowpayments');
+      const expandable = document.getElementById("emailExpandable");
+      if (m === 'nowpayments') {
+        expandable.classList.add("expanded");
+      } else {
+        expandable.classList.remove("expanded");
+      }
+    }
+
+    // ACTIONS (UPDATED MODAL LOGIC HERE)
+    async function handleMainAction() {
+      const btn = document.getElementById("purchaseButton");
+      
+      if (currentRegion === 'tn') {
+        // RESERVATION LOGIC
+        const email = document.getElementById("tnEmailInput").value.trim();
+        if (!validateEmail(email)) { document.getElementById("tnEmailError").textContent = "Enter a valid email"; return; }
+        
+        const isQueue = TUNISIA_STAGE === 'EARLY_ACCESS';
+        btn.textContent = isQueue ? "Joining Queue..." : "Reserving...";
+        btn.classList.add("btn-processing");
+        
+        try {
+          await fetch(`${API_URL}/handle-reservation`, { method: "POST", body: JSON.stringify({ email, region: 'Tunisia', stage: TUNISIA_STAGE }) });
+          document.getElementById("purchaseSection").classList.remove("active");
+          
+          // --- MODAL UPDATES FOR PHASE 1 & 2 ---
+          if (isQueue) {
+             // PHASE 2 MODAL
+             showAlert(
+                 "info", 
+                 "Reservation Confirmed", 
+                 "You have been added to the wave list. You will receive your early access link via email soon",
+                 "Close"
+             );
+             // Change Close Button to Secondary (Grey Outline)
+             const alertBtn = document.getElementById("alertBtn");
+             alertBtn.className = "button-secondary click-effect";
+          } else {
+             // PHASE 1 MODAL
+             showAlert(
+                 "info", 
+                 "Reservation Confirmed", 
+                 "You have secured your spot. When the Tunisian payment options open, you will be amongst the first to receive an early access link"
+             );
+             // FIX: ALSO SET PHASE 1 BUTTON TO SECONDARY
+             document.getElementById("alertBtn").className = "button-secondary click-effect";
+          }
+
+        } catch (e) {
+          btn.textContent = "Reserve Your Copy"; btn.classList.remove("btn-processing");
+          alert("Error. Try again.");
+        }
+
+      } else {
+        // INT LOGIC
+        if (currentMethod === 'nowpayments') {
+          const email = document.getElementById("emailInput").value.trim();
+          if (!validateEmail(email)) { document.getElementById("emailError").textContent = "Valid email required"; return; }
+          initiatePayment('nowpayments', email);
+        } else {
+          initiatePayment('stripe', null);
+        }
+      }
+    }
+
+    async function initiatePayment(provider, email) {
+      const btn = document.getElementById("purchaseButton");
+      btn.textContent = "Processing..."; btn.disabled = true;
+      try {
+        const endpoint = provider === 'stripe' ? "create-checkout-session" : "create-nowpayments-invoice";
+        const res = await fetch(`${API_URL}/${endpoint}`, {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ amount: currentPrice, ...(email ? { email } : {}) })
+        });
+        const data = await res.json();
+        if (data.url || data.invoice_url) window.location.href = data.url || data.invoice_url;
+      } catch (e) { btn.textContent = "Complete Purchase"; btn.disabled = false; alert("Failed."); }
+    }
+
+    // FLOUCI LOGIC
+    async function handleFlouciPayment() {
+        const btn = document.getElementById("purchaseButton");
+        const backupId = new URLSearchParams(window.location.search).get('activate') || 'PUBLIC_BUYER';
+        
+        btn.textContent = "Redirecting to Flouci...";
+        btn.classList.add("btn-processing");
+
+        try {
+            const res = await fetch(`${API_URL}/create-flouci-payment`, {
+                method: "POST", headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ amount: currentPrice, backupId: backupId })
+            });
+            const data = await res.json();
+            if(data.link) window.location.href = data.link;
+            else throw new Error("No link returned");
+        } catch(e) {
+            console.error(e);
+            showAlert("error", "Gateway Error", "Could not connect to Flouci. Try again.");
+            btn.textContent = "Pay with Flouci"; btn.classList.remove("btn-processing");
+        }
+    }
+
+    // SMART BACKUP
+    async function handleSmartBackup(backupId) {
+      if (currentToken) {
+        try {
+          const check = await fetch(`${API_URL}/verify-token`, { method: "POST", body: JSON.stringify({ token: currentToken }) }).then(r=>r.json());
+          if (check.valid && !check.expired && check.downloadTokens > 0) {
+            showAlert("warning", "Access Still Active", "You have valid access here. Don't waste your backup link.");
+            return;
+          }
+        } catch (e) {}
+      }
+      showAlert("loader", "Verifying Backup...", "Checking system...");
+      try {
+        const res = await fetch(`${API_URL}/use-backup`, { method: "POST", body: JSON.stringify({ backupId }) });
+        const data = await res.json();
+        if (data.token) {
+          currentToken = data.token; localStorage.setItem("ratchopper_token", currentToken);
+          showAlert("success", "Archive Unlocked", "Access restored for 24 Hours. Save your files now.", "Go to Download", () => { closeAlert(); verifyToken(); });
+        } else { showAlert("error", "Access Rejected", "Link already used."); }
+      } catch (e) { showAlert("error", "Error", "Try again."); }
+    }
+
+    // ARTWORK MODAL LOGIC
+    const albumArt = document.getElementById("albumArt");
+    const artworkModal = document.getElementById("artworkModal");
+    function showArtwork() { artworkModal.classList.add("visible"); }
+    function hideArtwork() { artworkModal.classList.remove("visible"); }
+    albumArt.addEventListener("click", showArtwork);
+    artworkModal.addEventListener("click", (e) => { if (e.target === artworkModal) hideArtwork(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideArtwork(); });
+
+    // UTILS
+    function showAlert(type, title, msg, btnText, btnAction) {
+        const section = document.getElementById("alertSection");
+        const wrapper = document.getElementById("alertIconWrapper");
+        const btn = document.getElementById("alertBtn");
+        
+        document.querySelectorAll(".modal-section").forEach(s => s.classList.remove("active"));
+        section.classList.add("active");
+        document.getElementById("purchaseModal").classList.add("visible");
+        document.body.classList.add("modal-open");
+        document.getElementById("alertTitle").textContent = title;
+        document.getElementById("alertMessage").textContent = msg;
+        
+        wrapper.innerHTML = "";
+        if (type==="loader") wrapper.innerHTML = '<div class="system-loader"></div>';
+        else if (type==="info") wrapper.innerHTML = '<img src="assets/info.svg" class="gold-filter" />';
+        else if (type==="success") wrapper.innerHTML = '<div class="spinner"><div></div></div>';
+        else if (type==="error") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">⚠️</div>';
+        else if (type==="warning") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">🛡️</div>';
+
+        btn.textContent = btnText || "Close";
+        btn.onclick = btnAction || closeAlert;
+        
+        // FORCE GREY BUTTON FOR ALL ALERTS
+        btn.className = "button-secondary click-effect";
+    }
+    
+    function closeAlert() {
+        document.getElementById("purchaseModal").classList.remove("visible");
+        document.body.classList.remove("modal-open");
+    }
+    
+    // Slider Logic (With Lag Fix)
+    const slider = { track: document.getElementById("sliderTrack"), thumb: document.getElementById("sliderThumb"), fill: document.getElementById("sliderFill") };
+    let isDragging = false;
+    
+    function updatePriceUI(percent) {
+      percent = Math.max(0, Math.min(100, percent));
+      slider.thumb.style.left = percent + "%"; slider.fill.style.width = percent + "%";
+      
+      if (currentRegion === 'int') {
+        currentPrice = Math.round(5 + (percent/100)*45);
+        document.getElementById("priceDisplay").textContent = "€" + currentPrice;
+      } else {
+        // TND LOGIC: 15 to 150
+        currentPrice = Math.round(15 + (percent/100)*135); 
+        document.getElementById("priceDisplay").textContent = currentPrice + " TND";
+      }
+    }
+    
+    const handleMove = (cX) => { 
+        const r = slider.track.getBoundingClientRect(); 
+        updatePriceUI(((cX - r.left) / r.width) * 100); 
+    };
+    
+    const startDrag = (e) => { 
+        isDragging = true; 
+        document.body.classList.add("grabbing");
+        // Add Dragging Class to Container to kill transition
+        document.querySelector('.slider-container').classList.add('dragging'); 
+        handleMove(e.clientX || e.touches[0].clientX); 
+    };
+    
+    const endDrag = () => { 
+        isDragging = false; 
+        document.body.classList.remove("grabbing"); 
+        // Remove Dragging Class to restore transition for clicks
+        document.querySelector('.slider-container').classList.remove('dragging'); 
+    };
+    
+    const doDrag = (e) => { 
+        if (isDragging) handleMove(e.clientX || e.touches[0].clientX); 
+    };
+
+    slider.track.addEventListener("mousedown", startDrag);
+    slider.track.addEventListener("touchstart", startDrag);
+    document.addEventListener("mousemove", doDrag);
+    document.addEventListener("touchmove", doDrag);
+    document.addEventListener("mouseup", endDrag);
+    document.addEventListener("touchend", endDrag);
+    
+    updatePriceUI(0);
+
+    // Misc
+    function showFormats() {
+      downloadEP(); 
+    }
+    function validateEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+    function randomPrice(e) { const p = Math.random()*100; updatePriceUI(p); }
+
+    // --- DATE CALCULATION FIX ---
+    function calculateDaysRemaining(token) {
+        try {
+            // Decode JWT (Base64Url -> Base64 -> JSON)
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(window.atob(base64));
+            
+            const exp = payload.exp * 1000; // to ms
+            const now = Date.now();
+            const diff = exp - now;
+            
+            if (diff <= 0) return "Expired";
+            
+            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            
+            if (days > 1) return `${days} days remaining`;
+            const hours = Math.ceil(diff / (1000 * 60 * 60));
+            return `${hours} hours remaining`;
+        } catch (e) { return "Calculating..."; }
+    }
+
+    // Token
+    async function verifyToken() {
+      try {
+        const res = await fetch(`${API_URL}/verify-token`, { method: "POST", body: JSON.stringify({ token: currentToken }) });
+        accessState = await res.json();
+        if (accessState.valid && !accessState.expired) {
+          document.getElementById("musicPlayer").src = accessState.streamUrl + "&theme=dark";
+          
+          // UPDATE THE DATE TEXT
+          document.getElementById("timeRemaining").textContent = calculateDaysRemaining(currentToken);
+          
+          showAccessPanel();
+        } else if (accessState.expired) {
+          showAlert("info", "Access Ended", "Your 7-day access window has closed.");
+          localStorage.removeItem("ratchopper_token");
+        }
+      } catch (e) { localStorage.removeItem("ratchopper_token"); }
+    }
+
+    function showAccessPanel() {
+        document.getElementById("accessPanel").style.display = "block";
+        document.getElementById("unlockOverlay").classList.add("hidden");
+        document.getElementById("playerContent").classList.remove("locked");
+        document.getElementById("downloadArea").classList.add("visible");
+        document.getElementById("tokenCount").textContent = `${accessState.downloadTokens}/2`;
+        const btn = document.getElementById("downloadFullButton");
+        const hasTokens = accessState.downloadTokens > 0;
+        btn.disabled = !hasTokens; btn.classList.toggle("disabled", !hasTokens);
+    }
+
+    // --- DOWNLOAD LOGIC (PULSING ANIMATION) ---
+    async function downloadEP() {
+      if (!currentToken) return;
+      const btn = document.getElementById("downloadFullButton");
+      const originalText = btn.innerHTML; // Contains the SVG
+      
+      // 1. Text Change & Pulse
+      btn.innerHTML = `<span class="download-btn-text">Initiating Download...</span>`;
+      btn.classList.add("btn-processing");
+      
+      try {
+        const res = await fetch(`${API_URL}/download`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ token: currentToken, format: 'MP3' }) 
+        });
+        const data = await res.json();
+        if (data.downloadUrl) {
+          accessState.downloadTokens = Math.max(0, accessState.downloadTokens - 1);
+          showAccessPanel();
+          window.location.href = data.downloadUrl;
+        }
+      } catch (e) {}
+      finally { 
+          // Reset UI after delay
+          setTimeout(() => { 
+              btn.classList.remove("btn-processing"); 
+              btn.innerHTML = originalText; 
+          }, 2000); 
+      }
+    }
+
+    async function handlePaymentSuccess(paymentId) {
+      try {
+        const email = localStorage.getItem("ratchopper_pending_email") || "";
+        const res = await fetch(`${API_URL}/generate-token`, {
+          method: "POST", body: JSON.stringify({ paymentId, paymentMethod: "stripe", customerEmail: email })
+        });
+        const data = await res.json();
+        if (data.token) {
+          currentToken = data.token; localStorage.setItem("ratchopper_token", currentToken);
+          await verifyToken();
+        }
+      } catch (e) {}
+    }
+  </script>
+</body>
+</html>

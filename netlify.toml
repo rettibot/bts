@@ -1,0 +1,34 @@
+functionsDirectory = "/Users/safouman/Downloads/bts-ep-release-official/netlify/functions"
+functionsDirectoryOrigin = "config-v1"
+headersOrigin = "config"
+plugins = []
+redirects = []
+
+[build]
+publish = "/Users/safouman/Downloads/bts-ep-release-official"
+publishOrigin = "config"
+functions = "/Users/safouman/Downloads/bts-ep-release-official/netlify/functions"
+
+  [build.environment]
+
+  [build.processing]
+
+    [build.processing.css]
+
+    [build.processing.html]
+
+    [build.processing.images]
+
+    [build.processing.js]
+
+  [build.services]
+
+[functions]
+
+  [functions."*"]
+
+[[headers]]
+for = "/*"
+
+  [headers.values]
+  Access-Control-Allow-Origin = "*"
