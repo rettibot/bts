@@ -3,6 +3,11 @@ const Airtable = require("airtable");
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
+if (!AIRTABLE_TABLE_NAME) {
+    throw new Error("Missing AIRTABLE_TABLE_NAME environment variable");
+}
+
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
     process.env.AIRTABLE_BASE_ID
 );
@@ -41,7 +46,7 @@ async function acquireDownloadLock(recordId) {
     const deadline = Date.now() + LOCK_TIMEOUT;
 
     while (Date.now() < deadline) {
-        const current = await base("Purchases").find(recordId);
+        const current = await base(AIRTABLE_TABLE_NAME).find(recordId);
         const { token: currentToken, expiresAt } = parseLockValue(
             current.fields[LOCK_FIELD]
         );
@@ -50,7 +55,7 @@ async function acquireDownloadLock(recordId) {
         if (isExpired) {
             const lockValue = `${token}:${Date.now() + LOCK_HOLD_TIME}`;
             try {
-                await base("Purchases").update(recordId, {
+                await base(AIRTABLE_TABLE_NAME).update(recordId, {
                     [LOCK_FIELD]: lockValue,
                 });
             } catch (err) {
@@ -65,7 +70,7 @@ async function acquireDownloadLock(recordId) {
                 throw err;
             }
 
-            const confirm = await base("Purchases").find(recordId);
+            const confirm = await base(AIRTABLE_TABLE_NAME).find(recordId);
             if (confirm.fields[LOCK_FIELD] === lockValue) {
                 return { lockValue, record: confirm };
             }
@@ -80,9 +85,9 @@ async function acquireDownloadLock(recordId) {
 async function releaseDownloadLock(recordId, lockValue) {
     if (!lockValue) return;
     try {
-        const current = await base("Purchases").find(recordId);
+        const current = await base(AIRTABLE_TABLE_NAME).find(recordId);
         if (current.fields[LOCK_FIELD] === lockValue) {
-            await base("Purchases").update(recordId, { [LOCK_FIELD]: "" });
+            await base(AIRTABLE_TABLE_NAME).update(recordId, { [LOCK_FIELD]: "" });
         }
     } catch (err) {
         console.warn("Failed to release download lock:", err.message);
@@ -117,7 +122,7 @@ exports.handler = async (event) => {
             };
         }
 
-        const records = await base("Purchases")
+        const records = await base(AIRTABLE_TABLE_NAME)
             .select({ filterByFormula: `PaymentID = '${decoded.paymentId}'` })
             .firstPage();
 
@@ -191,7 +196,7 @@ exports.handler = async (event) => {
 
             const updatedDownloads = Math.max(0, remainingDownloads - 1);
 
-            await base("Purchases").update(record.id, {
+            await base(AIRTABLE_TABLE_NAME).update(record.id, {
                 DownloadCount: updatedDownloads,
             });
 
