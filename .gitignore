@@ -3,7 +3,7 @@
 .env.local
 
 # Dependencies
-node_modules
+/node_modules
 
 # Platform/OS cruft
 .DS_Store
