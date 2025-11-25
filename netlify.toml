@@ -1,34 +1,39 @@
+# Netlify configuration for prod and dev setups
 functionsDirectory = "netlify/functions"
-functionsDirectoryOrigin = "config-v1"
-headersOrigin = "config"
-plugins = []
-redirects = []
 
 [build]
-publish = "."
-publishOrigin = "config"
-functions = "netlify/functions"
+  # General defaults (replace with your actual build command and publish dir)
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
 
-  [build.environment]
+[context.production]
+  # Production branch (e.g., prod) builds to live site bts.ratchoppermusic.com
+  command = "npm run build"
+  publish = "dist"
 
-  [build.processing]
+[context.branch-deploy]
+  # All non-prod branches use the dev build/publish outputs
+  command = "npm run build:dev"
+  publish = "dist-dev"
 
-    [build.processing.css]
+[context.dev]
+  # Specific overrides for the dev branch deployed at dev--bts-ep.netlify.app
+  command = "npm run build:dev"
+  publish = "dist-dev"
+  [context.dev.environment]
+    CUSTOM_ENV = "dev"
 
-    [build.processing.html]
-
-    [build.processing.images]
-
-    [build.processing.js]
-
-  [build.services]
-
-[functions]
-
-  [functions."*"]
+[[redirects]]
+  # Route dev.ratchoppermusic.com traffic to the Netlify dev branch deploy
+  from = "https://dev.ratchoppermusic.com/*"
+  to = "https://dev--bts-ep.netlify.app/:splat"
+  status = 200
+  force = true
 
 [[headers]]
-for = "/*"
-
+  for = "/*"
   [headers.values]
-  Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Origin = "*"
+
+# Note: Configure the CNAME for dev.ratchoppermusic.com -> dev--bts-ep.netlify.app in your external DNS (e.g., GoDaddy).
