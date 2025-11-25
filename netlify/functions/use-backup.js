@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
 const Airtable = require('airtable');
 
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
+if (!AIRTABLE_TABLE_NAME) {
+  throw new Error('Missing AIRTABLE_TABLE_NAME environment variable');
+}
+
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 
 exports.handler = async (event) => {
@@ -21,7 +26,7 @@ exports.handler = async (event) => {
     
     // SECURITY PATCH: Search by 'Backup_ID' (Secret), not 'PaymentID' (Public)
     // Ensure your Airtable column is exactly named "Backup_ID"
-    const records = await base('Purchases')
+    const records = await base(AIRTABLE_TABLE_NAME)
       .select({ filterByFormula: `Backup_ID = '${backupId}'` })
       .firstPage();
 
@@ -46,7 +51,7 @@ exports.handler = async (event) => {
     }
 
     // Mark as used in DB
-    await base('Purchases').update(record.id, updates);
+    await base(AIRTABLE_TABLE_NAME).update(record.id, updates);
 
     // SCARCITY LOGIC: 
     // 1. Set expiry to 24 Hours (86400 seconds)
