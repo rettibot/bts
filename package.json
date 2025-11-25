@@ -4,6 +4,8 @@
   "description": "RATCHOPPER BTS EP exclusive release website with token-based access",
   "main": "index.html",
   "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "echo \"Skipping build step; static assets only\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

@@ -2,25 +2,25 @@
 functionsDirectory = "netlify/functions"
 
 [build]
-  # General defaults (replace with your actual build command and publish dir)
+  # General defaults for static build (replace if you add a real build step)
   command = "npm run build"
-  publish = "dist"
+  publish = "."
   functions = "netlify/functions"
 
 [context.production]
   # Production branch (e.g., prod) builds to live site bts.ratchoppermusic.com
   command = "npm run build"
-  publish = "dist"
+  publish = "."
 
 [context.branch-deploy]
   # All non-prod branches use the dev build/publish outputs
   command = "npm run build:dev"
-  publish = "dist-dev"
+  publish = "."
 
 [context.dev]
   # Specific overrides for the dev branch deployed at dev--bts-ep.netlify.app
   command = "npm run build:dev"
-  publish = "dist-dev"
+  publish = "."
   [context.dev.environment]
     CUSTOM_ENV = "dev"
 
