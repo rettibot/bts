@@ -83,3 +83,47 @@ netlify dev
 -   Keep production changes on `main`; use `dev` for experiments, `bts-tn` for Tunisian-specific updates.
 -   Serverless code lives in `netlify/functions/`; static assets sit at the repo root.
 -   Avoid committing real secrets—use `.env` locally and Netlify environment variables in the dashboard.
+
+## Simple Git/GitHub on Windows (non‑technical friendly)
+
+You can manage updates with either plain Git, VS Code’s built‑in Git UI, or the GitHub Desktop app. Pick whichever feels easiest.
+
+### Option A: Quick commands in PowerShell
+
+Open PowerShell in a folder where you want the project and run:
+
+```bash
+git clone https://github.com/rettibot/bts-ep-release-official.git
+cd bts-ep-release-official
+```
+
+Pull latest changes before you start work:
+
+```bash
+git pull origin main   # or dev / bts-tn if you are on those branches
+```
+
+Save and send your work back to GitHub:
+
+```bash
+git status               # see what changed
+git add -A               # stage everything you edited
+git commit -m "your note"  #commit and describe the change
+git push origin main     # or your current branch name
+```
+
+### Option B: VS Code Git integration
+
+1. In VS Code, click **Source Control** (branch icon) → **Clone Repository** and paste `https://github.com/rettibot/bts-ep-release-official.git`.
+2. When prompted, choose a folder and click **Open**. Sign in to GitHub if asked.
+3. Pull updates anytime via **Source Control** → three‑dot menu → **Pull**.
+4. To push your changes: **Source Control** → type a short message → click **Commit** → three‑dot menu → **Push**. VS Code handles the Git commands for you.
+
+### Option C: GitHub Desktop (most visual)
+
+1. Install GitHub Desktop from https://desktop.github.com.
+2. Open it and **Sign in**. Click **File → Clone repository**, pick the **URL** tab, paste the repo URL, and choose a folder.
+3. Pull updates with **Fetch origin** (top bar) → **Pull**.
+4. After editing files, GitHub Desktop shows changes automatically. Add a summary message at the bottom → **Commit to main** (or your branch) → click **Push origin**.
+
+Tip: If you’re ever unsure which branch to use, check the “Branches / Environments” section above and match your work to the right branch.
