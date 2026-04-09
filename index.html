@@ -671,10 +671,25 @@
     document.addEventListener("DOMContentLoaded", async () => {
       const urlParams = new URLSearchParams(window.location.search);
       
+      // Stripe/NOWPayments success (payment_id in URL)
       if (urlParams.get("success") === "true" && urlParams.get("payment_id")) {
         showAlert("loader", "Processing Payment...", "Please wait...");
         await handlePaymentSuccess(urlParams.get("payment_id"));
-      } 
+      }
+      // Flouci success (payment_id stored in localStorage, region=tn in URL)
+      else if (urlParams.get("success") === "true" && urlParams.get("region") === "tn") {
+        const flouciPaymentId = localStorage.getItem("flouci_payment_id");
+        if (flouciPaymentId) {
+          showAlert("loader", "Verifying Payment...", "Confirming with Flouci...");
+          await handleFlouciSuccess(flouciPaymentId);
+        } else {
+          showAlert("error", "Payment Error", "Could not verify payment. Please contact support.");
+        }
+      }
+      // Flouci failure
+      else if (urlParams.get("error") === "true" && urlParams.get("region") === "tn") {
+        showAlert("error", "Payment Failed", "Your Flouci payment was not completed. Please try again.");
+      }
       else if (urlParams.get("backup")) {
         await handleSmartBackup(urlParams.get("backup"));
       }
@@ -916,12 +931,44 @@
                 body: JSON.stringify({ amount: currentPrice, backupId: backupId })
             });
             const data = await res.json();
-            if(data.link) window.location.href = data.link;
+            if(data.link) {
+                // Store payment_id in localStorage before redirecting to Flouci
+                if (data.payment_id) {
+                    localStorage.setItem("flouci_payment_id", data.payment_id);
+                }
+                window.location.href = data.link;
+            }
             else throw new Error("No link returned");
         } catch(e) {
             console.error(e);
             showAlert("error", "Gateway Error", "Could not connect to Flouci. Try again.");
-            btn.textContent = "Pay with Flouci"; btn.classList.remove("btn-processing");
+            btn.textContent = "Complete Purchase"; btn.classList.remove("btn-processing");
+        }
+    }
+
+    // FLOUCI SUCCESS VERIFICATION
+    async function handleFlouciSuccess(paymentId) {
+        try {
+            const res = await fetch(`${API_URL}/verify-flouci-payment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ payment_id: paymentId })
+            });
+            const data = await res.json();
+            if (data.token) {
+                currentToken = data.token;
+                localStorage.setItem("ratchopper_token", currentToken);
+                localStorage.removeItem("flouci_payment_id"); // Clean up
+                showAlert("success", "Purchase Complete!", "Your copy is unlocked. Enjoy the music.", "Access Content", () => { closeAlert(); verifyToken(); });
+            } else if (res.status === 402) {
+                // Payment not yet confirmed — might need a moment
+                showAlert("warning", "Payment Pending", data.error || "Your payment is being processed. Please refresh in a moment.", "Refresh", () => { window.location.reload(); });
+            } else {
+                showAlert("error", "Verification Failed", data.error || "Could not verify payment. Contact support.");
+            }
+        } catch(e) {
+            console.error("Flouci verify error:", e);
+            showAlert("error", "Connection Error", "Could not reach the server. Please refresh and try again.");
         }
     }
 
