@@ -2,7 +2,6 @@ functionsDirectory = "netlify/functions"
 functionsDirectoryOrigin = "config-v1"
 headersOrigin = "config"
 plugins = []
-redirects = []
 
 [build]
 publish = "."
@@ -31,4 +30,6 @@ functions = "netlify/functions"
 for = "/*"
 
   [headers.values]
-  Access-Control-Allow-Origin = "*"
+  Access-Control-Allow-Origin = "https://bts.ratchoppermusic.com"
+  Access-Control-Allow-Headers = "Content-Type"
+  Access-Control-Allow-Methods = "GET, POST, OPTIONS"

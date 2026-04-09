@@ -9,6 +9,11 @@ console.log("Airtable env check:", {
     keyPrefix: (process.env.AIRTABLE_API_KEY || "").slice(0, 4), 
 });
 
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
+if (!AIRTABLE_TABLE_NAME) {
+    throw new Error("Missing AIRTABLE_TABLE_NAME environment variable");
+}
+
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
     process.env.AIRTABLE_BASE_ID
 );
@@ -103,7 +108,7 @@ exports.handler = async (event) => {
         let purchaseRecord;
         let isExistingRecord = false;
         try {
-            const existingRecords = await base("Purchases")
+            const existingRecords = await base(AIRTABLE_TABLE_NAME)
                 .select({ filterByFormula: `PaymentID = '${paymentId}'` })
                 .firstPage();
 
@@ -111,13 +116,13 @@ exports.handler = async (event) => {
                 purchaseRecord = existingRecords[0];
                 isExistingRecord = true;
                 if (!purchaseRecord.fields.Email && customerEmail) {
-                    await base("Purchases").update(purchaseRecord.id, {
+                    await base(AIRTABLE_TABLE_NAME).update(purchaseRecord.id, {
                         Email: customerEmail,
                     });
                     purchaseRecord.fields.Email = customerEmail;
                 }
             } else {
-                purchaseRecord = await base("Purchases").create({
+                purchaseRecord = await base(AIRTABLE_TABLE_NAME).create({
                     PaymentID: paymentId,
                     DownloadCount: 2,
                     BackupUsed: false,

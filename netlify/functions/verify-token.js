@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
 const Airtable = require('airtable');
 
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
+if (!AIRTABLE_TABLE_NAME) {
+  throw new Error('Missing AIRTABLE_TABLE_NAME environment variable');
+}
+
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 
 exports.handler = async (event) => {
@@ -57,7 +62,7 @@ exports.handler = async (event) => {
     // Ensure we have matching purchase record for download/backup info
     let record;
     try {
-      const records = await base('Purchases')
+      const records = await base(AIRTABLE_TABLE_NAME)
         .select({ filterByFormula: `PaymentID = '${decoded.paymentId}'` })
         .firstPage();
 

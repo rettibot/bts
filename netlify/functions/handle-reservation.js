@@ -1,6 +1,11 @@
 const Airtable = require('airtable');
 const { Resend } = require('resend');
 
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
+if (!AIRTABLE_TABLE_NAME) {
+  throw new Error('Missing AIRTABLE_TABLE_NAME environment variable');
+}
+
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -23,7 +28,7 @@ exports.handler = async (event) => {
     const backupId = 'key_' + Math.random().toString(36).substr(2, 9); 
 
     // 2. Save to Airtable
-    await base('Purchases').create([
+    await base(AIRTABLE_TABLE_NAME).create([
       {
         fields: {
           "Email": email,
