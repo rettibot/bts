@@ -611,6 +611,24 @@
     // OPTIONS: 'RESERVE_ONLY' | 'EARLY_ACCESS' | 'OPEN'
     const TUNISIA_STAGE = 'OPEN'; 
 
+    /* --- BFCACHE FIX: Reset button state on browser back --- */
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            const btn = document.getElementById('purchaseButton');
+            if (btn) {
+                btn.textContent = 'Complete Purchase';
+                btn.classList.remove('btn-processing');
+                btn.disabled = false;
+            }
+            // Close purchase modal if it was left open
+            const modal = document.getElementById('purchaseModal');
+            if (modal && modal.classList.contains('visible')) {
+                modal.classList.remove('visible');
+                document.body.classList.remove('modal-open');
+            }
+        }
+    });
+
     /* BRAILLE GZLOBE SCRIPT */
     (function() {
         const enc = x => (x&0x08)<<3 | (x&0x70)>>1 | (x&0x87) | 0x2800;
