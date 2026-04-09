@@ -26,15 +26,10 @@ functions = "netlify/functions"
 
   [functions."*"]
 
-[[redirects]]
-from = "/*"
-to = "https://dev--bts-ep.netlify.app/:splat"
-status = 200
-force = true
-conditions = { Host = ["dev.ratchoppermusic.com"] }
-
 [[headers]]
 for = "/*"
 
   [headers.values]
-  Access-Control-Allow-Origin = "*"
+  Access-Control-Allow-Origin = "https://bts.ratchoppermusic.com"
+  Access-Control-Allow-Headers = "Content-Type"
+  Access-Control-Allow-Methods = "GET, POST, OPTIONS"
