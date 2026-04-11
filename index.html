@@ -252,7 +252,7 @@
       display: flex; align-items: center; justify-content: center;
     }
     
-    /* Fix for crooked text icons (like âš ï¸) */
+    /* Fix for crooked text icons (like ⚠️) */
     .modal-icon div, .modal-icon span { line-height: 1; display: block; }
     
     .modal-icon img { width: 100%; height: 100%; object-fit: cover; }
@@ -445,7 +445,7 @@
           <div class="limited-tooltip">In a world where music is reduced to fractions of cents... You own your copy.</div>
         </span>
         <h1 class="artist-name">RATCHOPPER</h1>
-        <p class="subtitle">5 Tracks â€¢ 5m 42s</p>
+        <p class="subtitle">5 Tracks • 5m 42s</p>
       </div>
 
       <div class="access-panel" id="accessPanel" style="display:none;">
@@ -469,7 +469,7 @@
         </div>
         <div class="overlay" id="unlockOverlay">
           <div class="overlay-content">
-            <div class="icon-wrapper">ðŸ”’</div>
+            <div class="icon-wrapper">🔒</div>
             <h2 class="overlay-title">Purchase to Unlock</h2>
             <p class="overlay-description">Get access to the full EP plus High-Quality downloads</p>
             <button class="button-primary click-effect" onclick="showPurchase()">Unlock Full EP</button>
@@ -487,7 +487,7 @@
       </div>
 
       <div class="footer">
-        Â© 2026 RATCHOPPER â€¢ ALL RIGHTS RESERVED
+        © 2026 RATCHOPPER • ALL RIGHTS RESERVED
         <div class="footer-links">
           <a href="privacy-policy/" class="footer-link">Privacy Policy</a>
           <a href="terms-of-service/" class="footer-link">Terms of Service</a>
@@ -526,23 +526,23 @@
         
         <div id="intHeader">
             <h2 class="modal-title">Choose Your Price</h2>
-            <p class="modal-subtitle">Support the artist â€¢ Pay what you want</p>
+            <p class="modal-subtitle">Support the artist • Pay what you want</p>
         </div>
         <div id="tnHeader" style="display:none">
             <h2 class="modal-title">Coming Soon</h2>
         </div>
 
         <div class="price-section" id="priceSection">
-          <div class="price-value" id="priceDisplay">â‚¬5</div>
+          <div class="price-value" id="priceDisplay">€5</div>
           <div class="price-label-text">Your Contribution</div>
           <div class="slider-container">
             <div class="slider-track" id="sliderTrack">
               <div class="slider-fill" id="sliderFill"></div>
               <div class="slider-thumb" id="sliderThumb"></div>
             </div>
-            <div class="slider-labels" id="sliderLabels"><span>â‚¬5</span><span>â‚¬50</span></div>
+            <div class="slider-labels" id="sliderLabels"><span>€5</span><span>€50</span></div>
           </div>
-          <button class="button-random click-effect" onclick="randomPrice(event)"><span class="dice-icon">ðŸŽ²</span> Choose For Me</button>
+          <button class="button-random click-effect" onclick="randomPrice(event)"><span class="dice-icon">🎲</span> Choose For Me</button>
         </div>
 
         <div class="view-stage-container">
@@ -587,7 +587,7 @@
         <button class="button-primary click-effect modal-action-btn" id="purchaseButton" onclick="handleMainAction()">Complete Purchase</button>
         
         <p id="codeText" style="text-align:center;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;margin-top:15px;margin-bottom:0; font-family: 'DM Sans', sans-serif;">Have a code? You can enter it at checkout.</p>
-        <button class="button-secondary click-effect modal-footer-link" id="backToRegionBtn" onclick="backToRegion()">â† Change Region</button>
+        <button class="button-secondary click-effect modal-footer-link" id="backToRegionBtn" onclick="backToRegion()">← Change Region</button>
       </div>
 
       <div class="modal-section" id="alertSection">
@@ -773,7 +773,7 @@
                     // Title is White (default class), Subtitle added below
                     tnHeader.innerHTML = `
                         <h2 class="modal-title">Early Access</h2>
-                        <p class="modal-subtitle">Support the artist â€¢ Pay what you want</p>
+                        <p class="modal-subtitle">Support the artist • Pay what you want</p>
                     `;
 
                     priceSec.style.display = "block";
@@ -835,7 +835,7 @@
                 intHeader.style.display = "block";
                 
                 priceSec.style.display = "block";
-                document.getElementById("sliderLabels").innerHTML = "<span>â‚¬5</span><span>â‚¬50</span>";
+                document.getElementById("sliderLabels").innerHTML = "<span>€5</span><span>€50</span>";
                 updatePriceUI(0);
 
                 btn.textContent = "Complete Purchase";
@@ -1022,7 +1022,7 @@
                 localStorage.removeItem("flouci_customer_email");
                 showAlert("success", "Purchase Complete!", "Your copy is unlocked. Enjoy the music.", "Access Content", () => { closeAlert(); verifyToken(); });
             } else if (res.status === 402) {
-                // Payment not yet confirmed â€” might need a moment
+                // Payment not yet confirmed — might need a moment
                 const state = buildFlouciFailureMessage(data, expectedFailure);
                 if (state.type === "warning") {
                     showAlert("warning", state.title, state.message, state.buttonText, state.action);
@@ -1090,8 +1090,8 @@
         if (type==="loader") wrapper.innerHTML = '<div class="system-loader"></div>';
         else if (type==="info") wrapper.innerHTML = '<img src="assets/info.svg" class="gold-filter" />';
         else if (type==="success") wrapper.innerHTML = '<div class="spinner"><div></div></div>';
-        else if (type==="error") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">âš ï¸</div>';
-        else if (type==="warning") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">ðŸ›¡ï¸</div>';
+        else if (type==="error") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">⚠️</div>';
+        else if (type==="warning") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">🛡️</div>';
 
         btn.textContent = btnText || "Close";
         btn.onclick = btnAction || closeAlert;
@@ -1115,7 +1115,7 @@
       
       if (currentRegion === 'int') {
         currentPrice = Math.round(5 + (percent/100)*45);
-        document.getElementById("priceDisplay").textContent = "â‚¬" + currentPrice;
+        document.getElementById("priceDisplay").textContent = "€" + currentPrice;
       } else {
         // TND LOGIC: 1 to 150
         currentPrice = Math.round(1 + (percent / 100) * 149);
