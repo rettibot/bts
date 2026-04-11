@@ -252,7 +252,7 @@
       display: flex; align-items: center; justify-content: center;
     }
     
-    /* Fix for crooked text icons (like ⚠️) */
+    /* Fix for crooked text icons (like âš ï¸) */
     .modal-icon div, .modal-icon span { line-height: 1; display: block; }
     
     .modal-icon img { width: 100%; height: 100%; object-fit: cover; }
@@ -445,7 +445,7 @@
           <div class="limited-tooltip">In a world where music is reduced to fractions of cents... You own your copy.</div>
         </span>
         <h1 class="artist-name">RATCHOPPER</h1>
-        <p class="subtitle">5 Tracks • 5m 42s</p>
+        <p class="subtitle">5 Tracks â€¢ 5m 42s</p>
       </div>
 
       <div class="access-panel" id="accessPanel" style="display:none;">
@@ -469,7 +469,7 @@
         </div>
         <div class="overlay" id="unlockOverlay">
           <div class="overlay-content">
-            <div class="icon-wrapper">🔒</div>
+            <div class="icon-wrapper">ðŸ”’</div>
             <h2 class="overlay-title">Purchase to Unlock</h2>
             <p class="overlay-description">Get access to the full EP plus High-Quality downloads</p>
             <button class="button-primary click-effect" onclick="showPurchase()">Unlock Full EP</button>
@@ -487,7 +487,7 @@
       </div>
 
       <div class="footer">
-        © <script>document.write(new Date().getFullYear())</script> RATCHOPPER • ALL RIGHTS RESERVED
+        Â© 2026 RATCHOPPER â€¢ ALL RIGHTS RESERVED
         <div class="footer-links">
           <a href="privacy-policy/" class="footer-link">Privacy Policy</a>
           <a href="terms-of-service/" class="footer-link">Terms of Service</a>
@@ -526,23 +526,23 @@
         
         <div id="intHeader">
             <h2 class="modal-title">Choose Your Price</h2>
-            <p class="modal-subtitle">Support the artist • Pay what you want</p>
+            <p class="modal-subtitle">Support the artist â€¢ Pay what you want</p>
         </div>
         <div id="tnHeader" style="display:none">
             <h2 class="modal-title">Coming Soon</h2>
         </div>
 
         <div class="price-section" id="priceSection">
-          <div class="price-value" id="priceDisplay">€5</div>
+          <div class="price-value" id="priceDisplay">â‚¬5</div>
           <div class="price-label-text">Your Contribution</div>
           <div class="slider-container">
             <div class="slider-track" id="sliderTrack">
               <div class="slider-fill" id="sliderFill"></div>
               <div class="slider-thumb" id="sliderThumb"></div>
             </div>
-            <div class="slider-labels" id="sliderLabels"><span>€5</span><span>€50</span></div>
+            <div class="slider-labels" id="sliderLabels"><span>â‚¬5</span><span>â‚¬50</span></div>
           </div>
-          <button class="button-random click-effect" onclick="randomPrice(event)"><span class="dice-icon">🎲</span> Choose For Me</button>
+          <button class="button-random click-effect" onclick="randomPrice(event)"><span class="dice-icon">ðŸŽ²</span> Choose For Me</button>
         </div>
 
         <div class="view-stage-container">
@@ -587,7 +587,7 @@
         <button class="button-primary click-effect modal-action-btn" id="purchaseButton" onclick="handleMainAction()">Complete Purchase</button>
         
         <p id="codeText" style="text-align:center;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;margin-top:15px;margin-bottom:0; font-family: 'DM Sans', sans-serif;">Have a code? You can enter it at checkout.</p>
-        <button class="button-secondary click-effect modal-footer-link" id="backToRegionBtn" onclick="backToRegion()">← Change Region</button>
+        <button class="button-secondary click-effect modal-footer-link" id="backToRegionBtn" onclick="backToRegion()">â† Change Region</button>
       </div>
 
       <div class="modal-section" id="alertSection">
@@ -610,24 +610,6 @@
     /* --- CONFIGURATION --- */
     // OPTIONS: 'RESERVE_ONLY' | 'EARLY_ACCESS' | 'OPEN'
     const TUNISIA_STAGE = 'OPEN'; 
-
-    /* --- BFCACHE FIX: Reset button state on browser back --- */
-    window.addEventListener('pageshow', function(event) {
-        if (event.persisted) {
-            const btn = document.getElementById('purchaseButton');
-            if (btn) {
-                btn.textContent = 'Complete Purchase';
-                btn.classList.remove('btn-processing');
-                btn.disabled = false;
-            }
-            // Close purchase modal if it was left open
-            const modal = document.getElementById('purchaseModal');
-            if (modal && modal.classList.contains('visible')) {
-                modal.classList.remove('visible');
-                document.body.classList.remove('modal-open');
-            }
-        }
-    });
 
     /* BRAILLE GZLOBE SCRIPT */
     (function() {
@@ -688,25 +670,36 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      
-      // Stripe/NOWPayments success (payment_id in URL)
-      if (urlParams.get("success") === "true" && urlParams.get("payment_id")) {
-        showAlert("loader", "Processing Payment...", "Please wait...");
-        await handlePaymentSuccess(urlParams.get("payment_id"));
+
+      if (urlParams.get("token")) {
+        currentToken = urlParams.get("token");
+        localStorage.setItem("ratchopper_token", currentToken);
+        await verifyToken();
       }
-      // Flouci success (payment_id stored in localStorage, region=tn in URL)
-      else if (urlParams.get("success") === "true" && urlParams.get("region") === "tn") {
-        const flouciPaymentId = localStorage.getItem("flouci_payment_id");
+      
+      // Flouci return path (payment_id is usually stored in localStorage before redirect)
+      else if (urlParams.get("region") === "tn" && (urlParams.get("success") === "true" || urlParams.get("error") === "true")) {
+        const flouciPaymentId = urlParams.get("payment_id") || localStorage.getItem("flouci_payment_id");
         if (flouciPaymentId) {
-          showAlert("loader", "Verifying Payment...", "Confirming with Flouci...");
-          await handleFlouciSuccess(flouciPaymentId);
+          const isFailureReturn = urlParams.get("error") === "true";
+          showAlert(
+            "loader",
+            isFailureReturn ? "Checking Payment..." : "Verifying Payment...",
+            isFailureReturn ? "Confirming the final status with Flouci..." : "Confirming with Flouci..."
+          );
+          await handleFlouciReturn(flouciPaymentId, { expectedFailure: isFailureReturn });
         } else {
-          showAlert("error", "Payment Error", "Could not verify payment. Please contact support.");
+          const title = urlParams.get("error") === "true" ? "Payment Failed" : "Payment Error";
+          const message = urlParams.get("error") === "true"
+            ? "Your Flouci payment was not completed. Please try again."
+            : "Could not verify payment. Please contact support.";
+          showAlert("error", title, message);
         }
       }
-      // Flouci failure
-      else if (urlParams.get("error") === "true" && urlParams.get("region") === "tn") {
-        showAlert("error", "Payment Failed", "Your Flouci payment was not completed. Please try again.");
+      // Stripe/NOWPayments success (payment_id in URL)
+      else if (urlParams.get("success") === "true" && urlParams.get("payment_id")) {
+        showAlert("loader", "Processing Payment...", "Please wait...");
+        await handlePaymentSuccess(urlParams.get("payment_id"));
       }
       else if (urlParams.get("backup")) {
         await handleSmartBackup(urlParams.get("backup"));
@@ -780,22 +773,24 @@
                     // Title is White (default class), Subtitle added below
                     tnHeader.innerHTML = `
                         <h2 class="modal-title">Early Access</h2>
-                        <p class="modal-subtitle">Support the artist • Pay what you want</p>
+                        <p class="modal-subtitle">Support the artist â€¢ Pay what you want</p>
                     `;
 
                     priceSec.style.display = "block";
                     updatePriceUI(0); 
-                    document.getElementById("sliderLabels").innerHTML = "<span>15 TND</span><span>150 TND</span>";
+                document.getElementById("sliderLabels").innerHTML = "<span>1 TND</span><span>150 TND</span>";
                     
                     btn.textContent = "Complete Purchase";
                     btn.onclick = handleFlouciPayment;
                     btn.classList.add("button-pulse"); // Add Pulse Animation
                     codeText.style.display = "none";
 
-                    // Hide inputs & notes, Show Code
+                    // Require email before opening Flouci so we control delivery and backup access.
                     tnWaitlistMsg.style.display = "none";
-                    tnEmailWrapper.style.display = "none";
-                    tnPaymentNote.style.display = "none"; // Removed Flouci Text
+                    tnEmailWrapper.style.display = "block";
+                    document.getElementById("tnEmailInput").placeholder = "Enter email for receipt and access...";
+                    tnPaymentNote.style.display = "block";
+                    tnPaymentNote.textContent = "We send your receipt, access link, and backup link to this email.";
                     
                     if(resCode) {
                         tnResCode.textContent = `RESERVATION CODE: ${resCode}`;
@@ -840,7 +835,7 @@
                 intHeader.style.display = "block";
                 
                 priceSec.style.display = "block";
-                document.getElementById("sliderLabels").innerHTML = "<span>€5</span><span>€50</span>";
+                document.getElementById("sliderLabels").innerHTML = "<span>â‚¬5</span><span>â‚¬50</span>";
                 updatePriceUI(0);
 
                 btn.textContent = "Complete Purchase";
@@ -939,14 +934,23 @@
     async function handleFlouciPayment() {
         const btn = document.getElementById("purchaseButton");
         const backupId = new URLSearchParams(window.location.search).get('activate') || 'PUBLIC_BUYER';
+        const customerEmail = document.getElementById("tnEmailInput").value.trim().toLowerCase();
+
+        document.getElementById("tnEmailError").textContent = "";
+
+        if (!validateEmail(customerEmail)) {
+            document.getElementById("tnEmailError").textContent = "Enter a valid email to receive your access links.";
+            return;
+        }
         
         btn.textContent = "Redirecting to Flouci...";
         btn.classList.add("btn-processing");
 
         try {
+            localStorage.setItem("flouci_customer_email", customerEmail);
             const res = await fetch(`${API_URL}/create-flouci-payment`, {
                 method: "POST", headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ amount: currentPrice, backupId: backupId })
+                body: JSON.stringify({ amount: currentPrice, backupId: backupId, customerEmail: customerEmail })
             });
             const data = await res.json();
             if(data.link) {
@@ -960,28 +964,74 @@
         } catch(e) {
             console.error(e);
             showAlert("error", "Gateway Error", "Could not connect to Flouci. Try again.");
-            btn.textContent = "Complete Purchase"; btn.classList.remove("btn-processing");
+            btn.textContent = "Pay with Flouci"; btn.classList.remove("btn-processing");
         }
     }
 
-    // FLOUCI SUCCESS VERIFICATION
-    async function handleFlouciSuccess(paymentId) {
+    function buildFlouciFailureMessage(data, expectedFailure) {
+        const status = (data && data.status) ? String(data.status).toUpperCase() : "";
+        const supportLine = data && data.payment_id ? ` Reference: ${data.payment_id}` : "";
+
+        if (status === "PENDING") {
+            return {
+                type: "warning",
+                title: "Payment Pending",
+                message: (data && data.error) || "Your payment is still being processed by Flouci. Please refresh in a moment.",
+                buttonText: "Refresh",
+                action: () => { window.location.reload(); }
+            };
+        }
+
+        if (status === "EXPIRED") {
+            return {
+                type: "error",
+                title: "Session Expired",
+                message: ((data && data.error) || "Your payment session expired before confirmation.") + supportLine
+            };
+        }
+
+        if (status === "FAILURE") {
+            return {
+                type: "error",
+                title: "Payment Failed",
+                message: ((data && data.error) || "The card payment was declined by the processor.") + supportLine
+            };
+        }
+
+        return {
+            type: "error",
+            title: expectedFailure ? "Payment Failed" : "Verification Failed",
+            message: ((data && data.error) || "Could not verify payment. Contact support.") + supportLine
+        };
+    }
+
+    // FLOUCI RETURN VERIFICATION
+    async function handleFlouciReturn(paymentId, { expectedFailure = false } = {}) {
         try {
+            const customerEmail = localStorage.getItem("flouci_customer_email") || "";
             const res = await fetch(`${API_URL}/verify-flouci-payment`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ payment_id: paymentId })
+                body: JSON.stringify({ payment_id: paymentId, customer_email: customerEmail })
             });
             const data = await res.json();
             if (data.token) {
                 currentToken = data.token;
                 localStorage.setItem("ratchopper_token", currentToken);
                 localStorage.removeItem("flouci_payment_id"); // Clean up
+                localStorage.removeItem("flouci_customer_email");
                 showAlert("success", "Purchase Complete!", "Your copy is unlocked. Enjoy the music.", "Access Content", () => { closeAlert(); verifyToken(); });
             } else if (res.status === 402) {
-                // Payment not yet confirmed — might need a moment
-                showAlert("warning", "Payment Pending", data.error || "Your payment is being processed. Please refresh in a moment.", "Refresh", () => { window.location.reload(); });
+                // Payment not yet confirmed â€” might need a moment
+                const state = buildFlouciFailureMessage(data, expectedFailure);
+                if (state.type === "warning") {
+                    showAlert("warning", state.title, state.message, state.buttonText, state.action);
+                } else {
+                    localStorage.removeItem("flouci_payment_id");
+                    showAlert(state.type, state.title, state.message);
+                }
             } else {
+                localStorage.removeItem("flouci_payment_id");
                 showAlert("error", "Verification Failed", data.error || "Could not verify payment. Contact support.");
             }
         } catch(e) {
@@ -1008,7 +1058,9 @@
         if (data.token) {
           currentToken = data.token; localStorage.setItem("ratchopper_token", currentToken);
           showAlert("success", "Archive Unlocked", "Access restored for 24 Hours. Save your files now.", "Go to Download", () => { closeAlert(); verifyToken(); });
-        } else { showAlert("error", "Access Rejected", "Link already used."); }
+        } else {
+          showAlert("error", "Access Rejected", data.error || "Could not restore access with this backup link.");
+        }
       } catch (e) { showAlert("error", "Error", "Try again."); }
     }
 
@@ -1038,8 +1090,8 @@
         if (type==="loader") wrapper.innerHTML = '<div class="system-loader"></div>';
         else if (type==="info") wrapper.innerHTML = '<img src="assets/info.svg" class="gold-filter" />';
         else if (type==="success") wrapper.innerHTML = '<div class="spinner"><div></div></div>';
-        else if (type==="error") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">⚠️</div>';
-        else if (type==="warning") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">🛡️</div>';
+        else if (type==="error") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">âš ï¸</div>';
+        else if (type==="warning") wrapper.innerHTML = '<div style="font-size:50px; line-height:1;">ðŸ›¡ï¸</div>';
 
         btn.textContent = btnText || "Close";
         btn.onclick = btnAction || closeAlert;
@@ -1063,10 +1115,10 @@
       
       if (currentRegion === 'int') {
         currentPrice = Math.round(5 + (percent/100)*45);
-        document.getElementById("priceDisplay").textContent = "€" + currentPrice;
+        document.getElementById("priceDisplay").textContent = "â‚¬" + currentPrice;
       } else {
-        // TND LOGIC: 15 to 150
-        currentPrice = Math.round(15 + (percent/100)*135); 
+        // TND LOGIC: 1 to 150
+        currentPrice = Math.round(1 + (percent / 100) * 149);
         document.getElementById("priceDisplay").textContent = currentPrice + " TND";
       }
     }
@@ -1207,6 +1259,5 @@
         }
       } catch (e) {}
     }
-  </script>
-</body>
+  </script></body>
 </html>
