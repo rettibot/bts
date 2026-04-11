@@ -1,50 +1,56 @@
 const {
-  extractFailureMessage,
   finalizeFlouciPayment,
   sendFlouciConfirmationEmail
 } = require('./flouci-shared');
 
+function extractPaymentId(payload) {
+  return (
+    payload.payment_id ||
+    payload.paymentId ||
+    payload.id ||
+    (payload.data && (payload.data.payment_id || payload.data.paymentId)) ||
+    (payload.result && (payload.result.payment_id || payload.result.paymentId)) ||
+    null
+  );
+}
+
 exports.handler = async (event) => {
   const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json'
   };
+  const query = event.queryStringParameters || {};
 
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
 
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: 'Method Not Allowed' };
+  if (!['GET', 'POST'].includes(event.httpMethod)) {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
 
   try {
-    const { payment_id, customer_email } = JSON.parse(event.body || '{}');
+    const payload = event.httpMethod === 'POST'
+      ? JSON.parse(event.body || '{}')
+      : {};
+    const paymentId = extractPaymentId(payload)
+      || query.payment_id
+      || query.paymentId
+      || query.id
+      || null;
 
-    if (!payment_id) {
+    if (!paymentId) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing payment_id' }) };
     }
 
-    const outcome = await finalizeFlouciPayment(payment_id, {
-      preferredEmail: customer_email
-    });
-
-    console.log('Flouci verification outcome:', JSON.stringify({
-      payment_id,
-      status: outcome.verification.status
-    }));
+    const outcome = await finalizeFlouciPayment(paymentId);
 
     if (!outcome.verified) {
-      console.log('Flouci verification failure payload:', JSON.stringify(outcome.verification.raw));
       return {
-        statusCode: 402,
+        statusCode: 202,
         headers,
         body: JSON.stringify({
-          error: extractFailureMessage(outcome.verification),
-          status: outcome.verification.status || 'UNKNOWN',
-          payment_id
+          acknowledged: true,
+          status: outcome.verification.status || 'UNKNOWN'
         })
       };
     }
@@ -54,12 +60,12 @@ exports.handler = async (event) => {
         await sendFlouciConfirmationEmail({
           customerEmail: outcome.customerEmail,
           purchaseRecord: outcome.purchaseRecord,
-          paymentId: payment_id,
+          paymentId,
           amountMillimes: outcome.verification.result.amount,
           accessToken: outcome.token
         });
       } catch (emailError) {
-        console.warn('Flouci confirmation email failed (non-critical):', emailError.message);
+        console.warn('Flouci webhook email failed (non-critical):', emailError.message);
       }
     }
 
@@ -67,12 +73,12 @@ exports.handler = async (event) => {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        token: outcome.token,
+        acknowledged: true,
         status: outcome.verification.status
       })
     };
   } catch (error) {
-    console.error('Flouci verification error:', error);
+    console.error('Flouci webhook error:', error);
     return {
       statusCode: 500,
       headers,
